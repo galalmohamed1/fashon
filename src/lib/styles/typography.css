@@ -1,0 +1,14 @@
+/* ============================================================
+   styles/typography.css
+   Font scale, display/heading/body/mono utilities
+   ============================================================ */
+
+.font-display  { font-family: var(--font-syne), sans-serif; font-weight: 800; letter-spacing: -0.04em; }
+.font-heading  { font-family: var(--font-space-grotesk), sans-serif; letter-spacing: -0.03em; }
+.font-sans     { font-family: var(--font-outfit), sans-serif; }
+.font-mono     { font-family: var(--font-jetbrains-mono), monospace; }
+
+/* Fluid type scale */
+.text-fluid-xl  { font-size: clamp(2.5rem, 6vw, 5rem); }
+.text-fluid-2xl { font-size: clamp(3rem, 8vw, 7rem); }
+.text-fluid-3xl { font-size: clamp(3.5rem, 10vw, 9rem); }

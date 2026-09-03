@@ -1,0 +1,6 @@
+{
+  "name": "GM — Luxury Futuristic Streetwear",
+  "description": "Premium modern fashion e-commerce brand featuring interactive 3D apparel, futuristic streetwear collections, and high-end editorial curation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,47 @@
+import type { Metadata } from 'next';
+import { Outfit, Space_Grotesk, Syne, JetBrains_Mono } from 'next/font/google';
+import './globals.css';
+import { ShopProvider } from '../lib/context/ShopContext';
+import { ToastContainer } from '../components/ui/ToastContainer';
+import { SearchModal } from '../components/layout/SearchModal';
+import { SizeGuideModal } from '../components/features/products/SizeGuideModal';
+import { CartDrawer } from '../components/features/cart/CartDrawer';
+import { Navbar } from '../components/layout/Navbar';
+import { Footer } from '../components/layout/Footer';
+
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
+const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
+const syne = Syne({ subsets: ['latin'], variable: '--font-syne' });
+const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
+
+export const metadata: Metadata = {
+  title: 'GM — Luxury Futuristic Streetwear',
+  description: 'Premium modern fashion e-commerce brand featuring interactive 3D apparel, futuristic streetwear collections, and high-end editorial curation.',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" className={`scroll-smooth ${outfit.variable} ${spaceGrotesk.variable} ${syne.variable} ${jetBrainsMono.variable}`}>
+      <body className="bg-white text-zinc-950 antialiased selection:bg-black selection:text-white min-h-screen flex flex-col overflow-x-hidden font-sans"cz-shortcut-listen="true">
+        <ShopProvider>
+          <ToastContainer />
+          <SearchModal />
+          <SizeGuideModal />
+          <CartDrawer />
+          
+          <Navbar />
+          
+          <main className="flex-1 w-full pt-16 sm:pt-20">
+            {children}
+          </main>
+          
+          <Footer />
+        </ShopProvider>
+      </body>
+    </html>
+  );
+}
