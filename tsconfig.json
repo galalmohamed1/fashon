@@ -17,7 +17,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./src/*"],
+      "@images/*": ["./src/assets/imgs/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true,

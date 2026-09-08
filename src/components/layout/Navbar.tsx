@@ -3,15 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, ShoppingBag, Heart, Menu, X, ArrowRight, User } from 'lucide-react';
 import { useShop } from '../../lib/context/ShopContext';
-import { PageView } from '../../types';
 import { GMLogo } from '../ui/GMLogo';
 import Link from 'next/link';
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/src/components/ui/avatar"
-import { Button } from "@/src/components/ui/button"
+} from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu"
 
 export const Navbar: React.FC = () => {
   const {

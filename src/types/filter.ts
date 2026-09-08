@@ -1,4 +1,4 @@
-import { Category } from './product';
+import { Category } from './category';
 
 export type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'rating';
 

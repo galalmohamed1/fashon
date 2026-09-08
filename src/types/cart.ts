@@ -1,30 +1,26 @@
-import { Product, ProductColor } from './product';
-
-export type CustomDesignOption = 'kiikii-cat' | 'threadx-logo' | 'minimal-logo' | 'no-logo';
+import { Product } from "./product";
 
 export interface CartItem {
-  id: string; // unique item id = `${productId}-${color}-${size}-${customDesign}`
-  product: Product;
-  selectedColor: ProductColor;
-  selectedSize: string;
+  _id: string;
+  product: string | Product;
   quantity: number;
-  customDesign?: CustomDesignOption;
-  customColorHex?: string;
+  size?: string;
+  color?: string;
+  price: number;
+}
+ 
+export interface Cart {
+  _id: string;
+  user: string;
+  items: CartItem[];
+  totalPrice: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface PromoCode {
-  code: string;
-  discountPercent: number;
-  description: string;
-  minSpend?: number;
-}
-
-export interface CartSummary {
-  itemsCount: number;
-  subtotal: number;
-  discount: number;
-  shipping: number;
-  total: number;
-  freeShippingThreshold: number;
-  remainingForFreeShipping: number;
+export interface AddToCartPayload {
+  productId: string;
+  quantity: number;
+  size?: string;
+  color?: string;
 }
