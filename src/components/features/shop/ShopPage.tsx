@@ -1,20 +1,20 @@
 'use client';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Filter, SlidersHorizontal, ArrowUpDown, X, Search, RotateCcw, Sparkles, Grid3X3, Grid2X2 } from 'lucide-react';
+import { Filter, SlidersHorizontal, ArrowUpDown, X, Search, RotateCcw, Grid3X3, Grid2X2 } from 'lucide-react';
 
 import { useShop } from '../../../lib/context/ShopContext';
-import { Category, SortOption, Product } from '../../../types';
+import { SortOption } from '../../../types';
 import { ProductCard } from '../../shared/ProductCard';
 
 export const ShopPage: React.FC = () => {
-  const { products, filters, setFilters, resetFilters, selectedCategory, setSelectedCategory } = useShop();
+  const { products, filters, setFilters, resetFilters, setSelectedCategory } = useShop();
 
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [gridCols, setGridCols] = useState<3 | 4>(3);
   const [visibleCount, setVisibleCount] = useState(12);
 
-  const categories: { id: Category; label: string }[] = [
+  const categories = [
     { id: 'all', label: 'ALL ARCHIVE' },
     { id: 't-shirts', label: 'T-SHIRTS' },
     { id: 'hoodies', label: 'HOODIES' },
@@ -42,9 +42,9 @@ export const ShopPage: React.FC = () => {
   ];
 
   // Category switch
-  const handleCategorySelect = (cat: Category) => {
-    setSelectedCategory(cat);
-    setFilters((prev) => ({ ...prev, category: cat }));
+  const handleCategorySelect = (catId: string) => {
+    setSelectedCategory(catId);
+    setFilters((prev) => ({ ...prev, category: catId as any }));
   };
 
   // Toggle size filter
@@ -69,51 +69,51 @@ export const ShopPage: React.FC = () => {
   const filteredProducts = useMemo(() => {
     return products
       .filter((product) => {
-        // Category
-        if (filters.category !== 'all' && product.category !== filters.category) return false;
+        const prodPrice = product.discountPrice && product.discountPrice < product.price
+          ? product.discountPrice
+          : product.price;
+
+        // Category / SubCategory
+        if (filters.category && (filters.category as any) !== 'all') {
+          const catStr = String(filters.category).toLowerCase();
+          const subCatSlug = product.subCategory?.slug?.toLowerCase() || '';
+          const subCatName = product.subCategory?.name?.toLowerCase() || '';
+          if (!subCatSlug.includes(catStr) && !subCatName.includes(catStr)) {
+            return false;
+          }
+        }
 
         // Price
-        if (product.price < filters.minPrice || product.price > filters.maxPrice) return false;
+        if (prodPrice < filters.minPrice || prodPrice > filters.maxPrice) return false;
 
         // In Stock
-        if (filters.onlyInStock && !product.inStock) return false;
-
-        // Sizes
-        if (filters.sizes.length > 0) {
-          const hasSize = product.sizes.some((s) => filters.sizes.includes(s));
-          if (!hasSize) return false;
-        }
-
-        // Colors
-        if (filters.colors.length > 0) {
-          const hasColor = product.colors.some((c) =>
-            filters.colors.some((fc) => c.name.toLowerCase().includes(fc.toLowerCase()))
-          );
-          if (!hasColor) return false;
-        }
+        if (filters.onlyInStock && (!product.isActive || product.isDeleted)) return false;
 
         // Search Query
         if (filters.searchQuery.trim()) {
           const q = filters.searchQuery.toLowerCase();
           const matches =
             product.name.toLowerCase().includes(q) ||
-            product.description.toLowerCase().includes(q) ||
-            product.collection.toLowerCase().includes(q);
+            (product.description && product.description.toLowerCase().includes(q)) ||
+            (product.subCategory?.name && product.subCategory.name.toLowerCase().includes(q));
           if (!matches) return false;
         }
 
         return true;
       })
       .sort((a, b) => {
+        const priceA = a.discountPrice && a.discountPrice < a.price ? a.discountPrice : a.price;
+        const priceB = b.discountPrice && b.discountPrice < b.price ? b.discountPrice : b.price;
+
         switch (filters.sortBy) {
           case 'price-asc':
-            return a.price - b.price;
+            return priceA - priceB;
           case 'price-desc':
-            return b.price - a.price;
+            return priceB - priceA;
           case 'newest':
-            return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
+            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
           case 'rating':
-            return b.rating - a.rating;
+            return (b.averageRating || 0) - (a.averageRating || 0);
           case 'featured':
           default:
             return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
@@ -125,10 +125,10 @@ export const ShopPage: React.FC = () => {
 
   // Active filter count
   const activeFiltersCount =
-    (filters.category !== 'all' ? 1 : 0) +
+    ((filters.category as any) !== 'all' ? 1 : 0) +
     filters.sizes.length +
     filters.colors.length +
-    (filters.maxPrice < 300 ? 1 : 0) +
+    (filters.maxPrice < 3000 ? 1 : 0) +
     (filters.onlyInStock ? 1 : 0) +
     (filters.searchQuery ? 1 : 0);
 
@@ -157,7 +157,7 @@ export const ShopPage: React.FC = () => {
         {/* Category Pills Slider */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none mb-8 border-b border-zinc-200">
           {categories.map((cat) => {
-            const isSelected = filters.category === cat.id;
+            const isSelected = (filters.category as any) === cat.id;
             return (
               <button
                 key={cat.id}
@@ -294,16 +294,16 @@ export const ShopPage: React.FC = () => {
                     </label>
                     <input
                       type="range"
-                      min={40}
-                      max={300}
+                      min={10}
+                      max={3000}
                       step={10}
                       value={filters.maxPrice}
                       onChange={(e) => setFilters((prev) => ({ ...prev, maxPrice: Number(e.target.value) }))}
                       className="w-full accent-black cursor-pointer"
                     />
                     <div className="flex justify-between text-[10px] font-mono text-zinc-500 mt-1">
-                      <span>$40</span>
-                      <span>$300</span>
+                      <span>$10</span>
+                      <span>$3000</span>
                     </div>
                   </div>
 
@@ -385,10 +385,10 @@ export const ShopPage: React.FC = () => {
         {activeFiltersCount > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-8">
             <span className="text-[11px] font-mono text-zinc-500 uppercase font-semibold">ACTIVE:</span>
-            {filters.category !== 'all' && (
+            {(filters.category as any) !== 'all' && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-900 font-semibold">
-                CATEGORY: {filters.category.toUpperCase()}
-                <button onClick={() => setFilters((prev) => ({ ...prev, category: 'all' }))}>
+                CATEGORY: {String(filters.category).toUpperCase()}
+                <button onClick={() => setFilters((prev) => ({ ...prev, category: 'all' as any }))}>
                   <X className="w-3 h-3 text-zinc-500 hover:text-black" />
                 </button>
               </span>
@@ -409,10 +409,10 @@ export const ShopPage: React.FC = () => {
                 </button>
               </span>
             ))}
-            {filters.maxPrice < 300 && (
+            {filters.maxPrice < 3000 && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-900 font-semibold">
                 UNDER ${filters.maxPrice}
-                <button onClick={() => setFilters((prev) => ({ ...prev, maxPrice: 300 }))}>
+                <button onClick={() => setFilters((prev) => ({ ...prev, maxPrice: 3000 }))}>
                   <X className="w-3 h-3 text-zinc-500 hover:text-black" />
                 </button>
               </span>
@@ -434,7 +434,7 @@ export const ShopPage: React.FC = () => {
             } gap-6 sm:gap-8`}
           >
             {displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         ) : (

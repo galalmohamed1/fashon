@@ -142,13 +142,13 @@ export const CartDrawer: React.FC = () => {
               ) : (
                 cart.map((item) => (
                   <div
-                    key={item.id}
+                    key={item._id}
                     className="flex gap-4 p-3 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-colors shadow-xs"
                   >
                     {/* Item Image */}
                     <div className="w-20 h-24 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
                       <img
-                        src={item.product.image}
+                        src={item.product.images?.[0]?.secure_url || ''}
                         alt={item.product.name}
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
@@ -163,7 +163,7 @@ export const CartDrawer: React.FC = () => {
                             {item.product.name}
                           </h4>
                           <button
-                            onClick={() => removeFromCart(item.id)}
+                            onClick={() => removeFromCart(item._id)}
                             className="text-zinc-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
                             title="Remove item"
                           >
@@ -196,7 +196,7 @@ export const CartDrawer: React.FC = () => {
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center border border-zinc-300 rounded-lg bg-white">
                           <button
-                            onClick={() => updateQuantity(item.id, -1)}
+                            onClick={() => updateQuantity(item._id, -1)}
                             className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer"
                             aria-label="Decrease quantity"
                           >
@@ -206,7 +206,7 @@ export const CartDrawer: React.FC = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.id, 1)}
+                            onClick={() => updateQuantity(item._id, 1)}
                             className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer"
                             aria-label="Increase quantity"
                           >
@@ -215,7 +215,7 @@ export const CartDrawer: React.FC = () => {
                         </div>
 
                         <span className="font-mono text-sm font-bold text-black">
-                          ${(item.product.price * item.quantity).toFixed(2)}
+                          ${((item.product.discountPrice && item.product.discountPrice < item.product.price ? item.product.discountPrice : item.product.price) * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     </div>

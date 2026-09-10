@@ -574,10 +574,10 @@ export const CheckoutPage: React.FC = () => {
             {/* Items */}
             <div className="space-y-4 max-h-72 overflow-y-auto pr-2 pb-4 mb-6 border-b border-zinc-200">
               {cart.map((item) => (
-                <div key={item.id} className="flex items-center gap-3.5">
+                <div key={item._id} className="flex items-center gap-3.5">
                   <div className="w-14 h-18 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
                     <img
-                      src={item.product.image}
+                      src={item.product.images?.[0]?.secure_url || ''}
                       alt={item.product.name}
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"
@@ -588,11 +588,11 @@ export const CheckoutPage: React.FC = () => {
                       {item.product.name}
                     </h4>
                     <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
-                      QTY: {item.quantity} • {item.selectedSize} • {item.selectedColor.name}
+                      QTY: {item.quantity} • {item.selectedSize} {item.selectedColor?.name ? `• ${item.selectedColor.name}` : ''}
                     </p>
                   </div>
                   <span className="font-mono text-xs font-bold text-black">
-                    ${(item.product.price * item.quantity).toFixed(2)}
+                    ${(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               ))}

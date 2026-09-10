@@ -1,13 +1,13 @@
 'use client';
 import React from 'react';
-import { Heart, ShoppingBag, ArrowLeft, Trash2 } from 'lucide-react';
+import { Heart, ArrowLeft } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
 import { ProductCard } from '../../shared/ProductCard';
 
 export const WishlistPage: React.FC = () => {
   const { wishlist, products, setActivePage } = useShop();
 
-  const wishlistedProducts = products.filter((p) => wishlist.includes(p.id));
+  const wishlistedProducts = products.filter((p) => wishlist.includes(p._id));
 
   return (
     <div className="min-h-screen pt-10 pb-24 bg-white">
@@ -54,7 +54,7 @@ export const WishlistPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {wishlistedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
         )}

@@ -1,6 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useParams } from 'next/navigation';
 import {
   Heart,
   ShoppingBag,
@@ -12,49 +13,114 @@ import {
   ChevronDown,
   Sparkles,
   ArrowLeft,
-  Check,
-  Flame,
-  Layers,
-  Info
+  Check
 } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
-import { PRODUCTS, REVIEWS_DATA } from '../../../lib/data/products';
-import { ProductColor } from '../../../types';
+import { REVIEWS_DATA } from '../../../lib/data/products';
+import { Product, ProductColor } from '../../../types';
+import { getSingelProdect } from '@/app/api/services/prodect.services';
 import img from '../../../assets/kiikii-tshirt.png';
 
 import { ProductCard } from '../../shared/ProductCard';
 import { TShirtPhoto } from './TShirt3D';
 
 export const ProductDetailPage: React.FC = () => {
+  const params = useParams();
   const {
     selectedProductId,
-    getProductById,
+    products,
     setActivePage,
     addToCart,
     toggleWishlist,
     isWishlisted,
-    setIsSizeGuideOpen,
-    setIsCartOpen
+    setIsSizeGuideOpen
   } = useShop();
 
-  const product = getProductById(selectedProductId || 'tx-tee-01') || PRODUCTS[0];
+  const currentId = (params?.id as string) || selectedProductId || (products[0]?._id);
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Component State
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0]);
-  const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] || 'M');
+  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: 'Default', hex: '#121214' });
+  const [selectedSize, setSelectedSize] = useState<string>('M');
   const [quantity, setQuantity] = useState<number>(1);
   const [activeAccordion, setActiveAccordion] = useState<string | null>('materials');
   const [view3DMode, setView3DMode] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const wishlisted = isWishlisted(product.id);
-  const gallery = product.gallery && product.gallery.length > 0 ? product.gallery : [product.image];
-  const reviews = REVIEWS_DATA[product.id] || REVIEWS_DATA.default;
+  useEffect(() => {
+    let isMounted = true;
+    if (currentId) {
+      // First check if already in products list
+      const cached = products.find((p) => p._id === currentId);
+      if (cached) {
+        setProduct(cached);
+        setLoading(false);
+      }
 
-  // Related products
-  const relatedProducts = PRODUCTS.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3);
+      // Fetch fresh details from API
+      getSingelProdect(currentId)
+        .then((data) => {
+          if (isMounted && data) {
+            setProduct(data);
+            setLoading(false);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setLoading(false);
+        });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [currentId, products]);
+
+  if (loading && !product) {
+    return (
+      <div className="min-h-screen pt-28 pb-24 bg-white flex items-center justify-center">
+        <div className="text-center font-mono text-xs uppercase tracking-widest text-zinc-500">
+          LOADING ARCHIVE SPECIFICATION...
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen pt-28 pb-24 bg-white flex flex-col items-center justify-center">
+        <h2 className="font-display font-black text-2xl uppercase text-black mb-4">PRODUCT NOT FOUND</h2>
+        <button
+          onClick={() => setActivePage('shop')}
+          className="px-6 py-3 bg-black text-white font-mono text-xs uppercase font-bold tracking-widest rounded-xl"
+        >
+          RETURN TO SHOP
+        </button>
+      </div>
+    );
+  }
+
+  const wishlisted = isWishlisted(product._id);
+  const gallery = product.images && product.images.length > 0
+    ? product.images.map((img) => img.secure_url)
+    : [];
+  const reviews = REVIEWS_DATA[product._id] || REVIEWS_DATA.default;
+
+  const hasDiscount = Boolean(product.discountPrice && product.discountPrice < product.price);
+  const currentPrice = hasDiscount ? product.discountPrice : product.price;
+  const originalPrice = hasDiscount ? product.price : undefined;
+
+  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const availableColors: ProductColor[] = [
+    { name: 'Obsidian Black', hex: '#121214' },
+    { name: 'Pure White', hex: '#F5F5F7', border: true },
+    { name: 'Mineral Gray', hex: '#52525B' }
+  ];
+
+  // Related products from API products
+  const relatedProducts = products.filter((p) => p._id !== product._id).slice(0, 3);
 
   const toggleAccordion = (key: string) => {
     setActiveAccordion(activeAccordion === key ? null : key);
@@ -91,7 +157,7 @@ export const ProductDetailPage: React.FC = () => {
             <ArrowLeft className="w-3.5 h-3.5" /> SHOP ARCHIVE
           </button>
           <span>/</span>
-          <span className="text-zinc-500">{product.category}</span>
+          <span className="text-zinc-500">{product.subCategory?.name || 'ARCHIVE'}</span>
           <span>/</span>
           <span className="text-black font-bold truncate max-w-[200px]">{product.name}</span>
         </div>
@@ -102,62 +168,68 @@ export const ProductDetailPage: React.FC = () => {
           {/* Left Column: Image Gallery / 3D Canvas Switcher */}
           <div className="lg:col-span-7 flex flex-col gap-4">
             
-            {/* 3D Mode Toggle Button (if T-Shirt or available) */}
-            {product.category === 't-shirts' && (
-              <div className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 shadow-xs">
-                <span className="text-xs font-mono text-zinc-600 font-semibold flex items-center gap-1.5 pl-2">
-                  <Sparkles className="w-3.5 h-3.5 text-red-600" /> INTERACTIVE 3D PREVIEW
-                </span>
-                <div className="flex items-center p-1 rounded-lg bg-zinc-200 border border-zinc-300">
-                  <button
-                    onClick={() => setView3DMode(false)}
-                    className={`px-3 py-1 text-xs font-mono font-bold rounded transition-colors cursor-pointer ${
-                      !view3DMode ? 'bg-black text-white shadow-xs' : 'text-zinc-600 hover:text-black'
-                    }`}
-                  >
-                    EDITORIAL
-                  </button>
-                  <button
-                    onClick={() => setView3DMode(true)}
-                    className={`px-3 py-1 text-xs font-mono font-bold rounded transition-colors cursor-pointer ${
-                      view3DMode ? 'bg-black text-white shadow-xs' : 'text-zinc-600 hover:text-black'
-                    }`}
-                  >
-                    3D VIEW
-                  </button>
-                </div>
+            {/* 3D Mode Toggle Button */}
+            <div className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 shadow-xs">
+              <span className="text-xs font-mono text-zinc-600 font-semibold flex items-center gap-1.5 pl-2">
+                <Sparkles className="w-3.5 h-3.5 text-red-600" /> INTERACTIVE 3D PREVIEW
+              </span>
+              <div className="flex items-center p-1 rounded-lg bg-zinc-200 border border-zinc-300">
+                <button
+                  onClick={() => setView3DMode(false)}
+                  className={`px-3 py-1 text-xs font-mono font-bold rounded transition-colors cursor-pointer ${
+                    !view3DMode ? 'bg-black text-white shadow-xs' : 'text-zinc-600 hover:text-black'
+                  }`}
+                >
+                  EDITORIAL
+                </button>
+                <button
+                  onClick={() => setView3DMode(true)}
+                  className={`px-3 py-1 text-xs font-mono font-bold rounded transition-colors cursor-pointer ${
+                    view3DMode ? 'bg-black text-white shadow-xs' : 'text-zinc-600 hover:text-black'
+                  }`}
+                >
+                  3D VIEW
+                </button>
               </div>
-            )}
+            </div>
 
             {/* Viewport: Either 3D Canvas or High-Res Photography */}
-            {view3DMode && product.category === 't-shirts' ? (
+            {view3DMode ? (
               <div className="w-full rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-lg">
                 <TShirtPhoto src={img.src} />
               </div>
             ) : (
               <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-lg group">
-                <img
-                  src={gallery[activeImageIndex] || product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
-                  referrerPolicy="no-referrer"
-                />
+                {gallery.length > 0 ? (
+                  <img
+                    src={gallery[activeImageIndex] || gallery[0]}
+                    alt={product.name}
+                    className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-zinc-400 font-mono text-sm">
+                    NO IMAGE
+                  </div>
+                )}
 
                 {/* Badges */}
                 <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                  {product.tag && (
+                  {product.isFeatured && (
                     <span className="px-3 py-1 rounded bg-black font-mono text-[10px] font-bold tracking-widest uppercase text-white shadow-md">
-                      {product.tag}
+                      FEATURED
                     </span>
                   )}
-                  <span className="px-3 py-1 rounded bg-white/90 backdrop-blur-md border border-zinc-200 font-mono text-[10px] uppercase text-zinc-900 font-bold shadow-xs">
-                    {product.collection}
-                  </span>
+                  {hasDiscount && (
+                    <span className="px-3 py-1 rounded bg-red-600 font-mono text-[10px] font-bold tracking-widest uppercase text-white shadow-md">
+                      SALE
+                    </span>
+                  )}
                 </div>
 
                 {/* Wishlist Button */}
                 <button
-                  onClick={() => toggleWishlist(product.id)}
+                  onClick={() => toggleWishlist(product._id)}
                   className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md transition-all shadow-md cursor-pointer ${
                     wishlisted
                       ? 'bg-red-600 text-white'
@@ -199,15 +271,15 @@ export const ProductDetailPage: React.FC = () => {
           {/* Right Column: Specifications, Selectors & Checkout Actions */}
           <div className="lg:col-span-5 flex flex-col">
             
-            {/* Collection & Stock */}
+            {/* Collection & SubCategory */}
             <div className="flex items-center justify-between text-xs font-mono text-zinc-500 uppercase tracking-widest mb-3">
               <span className="flex items-center gap-1.5 font-bold text-zinc-700">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
-                {product.collection}
+                {product.subCategory?.name || 'ARCHIVE'}
               </span>
-              {product.stockCount && (
+              {product.isActive && (
                 <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
-                  ONLY {product.stockCount} UNITS REMAINING
+                  IN STOCK
                 </span>
               )}
             </div>
@@ -221,25 +293,32 @@ export const ProductDetailPage: React.FC = () => {
             <div className="flex items-center gap-3 mb-6 pb-6 border-b border-zinc-200">
               <div className="flex items-center gap-1 text-amber-500">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-amber-500 text-amber-500" />
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < Math.round(product.averageRating || 5)
+                        ? 'fill-amber-500 text-amber-500'
+                        : 'text-zinc-300'
+                    }`}
+                  />
                 ))}
               </div>
               <span className="font-mono text-xs text-black font-bold">
-                {product.rating} / 5.0
+                {product.averageRating || 5.0} / 5.0
               </span>
               <span className="text-zinc-500 font-mono text-xs font-medium">
-                ({product.reviewCount} VERIFIED REVIEWS)
+                ({product.numReviews || 0} VERIFIED REVIEWS)
               </span>
             </div>
 
             {/* Price */}
             <div className="flex items-baseline gap-3 mb-6">
               <span className="font-mono text-3xl sm:text-4xl font-bold text-black tracking-tight">
-                ${product.price}.00
+                ${currentPrice}.00
               </span>
-              {product.originalPrice && (
+              {originalPrice && (
                 <span className="font-mono text-lg text-zinc-400 line-through">
-                  ${product.originalPrice}.00
+                  ${originalPrice}.00
                 </span>
               )}
               <span className="text-[11px] font-mono uppercase text-zinc-500 ml-2 font-medium">
@@ -260,7 +339,7 @@ export const ProductDetailPage: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                {product.colors.map((color) => {
+                {availableColors.map((color) => {
                   const isSelected = selectedColor.name === color.name;
                   return (
                     <button
@@ -299,7 +378,7 @@ export const ProductDetailPage: React.FC = () => {
                 </button>
               </div>
               <div className="grid grid-cols-6 gap-2">
-                {product.sizes.map((size) => {
+                {availableSizes.map((size) => {
                   const isSelected = selectedSize === size;
                   return (
                     <button
@@ -356,7 +435,7 @@ export const ProductDetailPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <ShoppingBag className="w-4 h-4" /> ADD TO BAG — ${(product.price * quantity).toFixed(2)}
+                      <ShoppingBag className="w-4 h-4" /> ADD TO BAG — ${(currentPrice * quantity).toFixed(2)}
                     </>
                   )}
                 </button>
@@ -412,12 +491,18 @@ export const ProductDetailPage: React.FC = () => {
                       className="overflow-hidden pb-4"
                     >
                       <ul className="space-y-2 text-xs font-normal text-zinc-600">
-                        {product.materials.map((mat, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                            <span>{mat}</span>
-                          </li>
-                        ))}
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                          <span>100% Heavyweight Organic Combed Cotton</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                          <span>Custom bio-wash enzyme finish for tailored drape</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                          <span>Reinforced double-needle stitched sleeves and hem</span>
+                        </li>
                       </ul>
                     </motion.div>
                   )}
@@ -446,12 +531,14 @@ export const ProductDetailPage: React.FC = () => {
                       className="overflow-hidden pb-4"
                     >
                       <ul className="space-y-2 text-xs font-normal text-zinc-600">
-                        {product.features.map((feat, i) => (
-                          <li key={i} className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                            <span>{feat}</span>
-                          </li>
-                        ))}
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                          <span>Relaxed drop-shoulder silhouette</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                          <span>Pre-shrunk architectural collar retention</span>
+                        </li>
                       </ul>
                     </motion.div>
                   )}
@@ -506,7 +593,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
             <div className="flex items-center gap-4 mt-4 md:mt-0">
               <div className="text-right">
-                <p className="font-mono text-2xl font-bold text-black">{product.rating} / 5.0</p>
+                <p className="font-mono text-2xl font-bold text-black">{product.averageRating || 5.0} / 5.0</p>
                 <p className="font-mono text-[10px] text-zinc-500 uppercase font-bold">100% WOULD RECOMMEND</p>
               </div>
             </div>
@@ -565,7 +652,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {relatedProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p._id} product={p} />
               ))}
             </div>
           </div>
@@ -580,7 +667,7 @@ export const ProductDetailPage: React.FC = () => {
             {product.name}
           </p>
           <p className="font-mono text-xs font-bold text-zinc-800">
-            ${product.price} • {selectedSize}
+            ${currentPrice} • {selectedSize}
           </p>
         </div>
         <button

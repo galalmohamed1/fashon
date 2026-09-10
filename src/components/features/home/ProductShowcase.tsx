@@ -1,18 +1,15 @@
 'use client';
 import React, { useRef } from 'react';
-import { motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
-
-import { PRODUCTS } from '../../../lib/data/products';
 import { useShop } from '../../../lib/context/ShopContext';
 import { ProductCard } from '../../shared/ProductCard';
 
 export const ProductShowcase: React.FC = () => {
-  const { setActivePage } = useShop();
+  const { setActivePage, products } = useShop();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Showcase key flagship products
-  const showcaseProducts = PRODUCTS.slice(0, 8);
+  // Showcase key products from API
+  const showcaseProducts = products.slice(0, 8);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -68,7 +65,7 @@ export const ProductShowcase: React.FC = () => {
         >
           {showcaseProducts.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="w-[280px] sm:w-[320px] md:w-[340px] flex-shrink-0 snap-start"
             >
               <ProductCard product={product} />
@@ -79,7 +76,7 @@ export const ProductShowcase: React.FC = () => {
         {/* Bottom Explorer Action */}
         <div className="mt-12 flex items-center justify-between pt-6 border-t border-zinc-200 text-xs font-mono text-zinc-500">
           <span className="tracking-widest uppercase font-semibold">
-            SWIPE TO EXPLORE 8 PIECES
+            EXPLORE ARCHIVAL PIECES
           </span>
           <button
             onClick={() => {

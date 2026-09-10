@@ -1,9 +1,8 @@
 'use client';
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Sparkles, Layers, Eye } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
-import { Category } from '../../../types';
 
 export const CollectionsPage: React.FC = () => {
   const { setActivePage, setSelectedCategory } = useShop();
@@ -14,7 +13,7 @@ export const CollectionsPage: React.FC = () => {
       title: 'DROP 01 // SHADOW TECH',
       season: 'SPRING / SUMMER 2026',
       description: 'Ultra-heavyweight 480 GSM French Terry, Gore-Dyneema weatherproofing, and sculptural oversized fits designed for dystopian urban climates.',
-      category: 'hoodies' as Category,
+      category: 'hoodies',
       image: 'https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1200&auto=format&fit=crop',
       piecesCount: 6
     },
@@ -23,7 +22,7 @@ export const CollectionsPage: React.FC = () => {
       title: 'DROP 02 // CYBER ORGANIC',
       season: 'CORE ESSENTIALS',
       description: '100% GOTS-certified ring-spun organic cotton milled in Portugal with custom pigment dye washes and millimeter-precise collar ribbing.',
-      category: 't-shirts' as Category,
+      category: 't-shirts',
       image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1200&auto=format&fit=crop',
       piecesCount: 8
     },
@@ -32,13 +31,13 @@ export const CollectionsPage: React.FC = () => {
       title: 'DROP 03 // ARCHITECTURAL UTILITY',
       season: 'LIMITED ARCHIVE',
       description: 'Modular articulated tactical cargo pants, titanium hardware buckles, and waterproof zip pockets engineered for extreme mobility.',
-      category: 'pants' as Category,
+      category: 'pants',
       image: 'https://images.unsplash.com/photo-1517445312882-bc9910d016b7?q=80&w=1200&auto=format&fit=crop',
       piecesCount: 5
     }
   ];
 
-  const handleOpenCollection = (cat: Category) => {
+  const handleOpenCollection = (cat: string) => {
     setSelectedCategory(cat);
     setActivePage('shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });

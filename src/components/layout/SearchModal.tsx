@@ -3,25 +3,24 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
 import { useShop } from '../../lib/context/ShopContext';
-import { PRODUCTS } from '../../lib/data/products';
 
 export const SearchModal: React.FC = () => {
-  const { isSearchOpen, setIsSearchOpen, openProductDetail, setActivePage, setSelectedCategory } = useShop();
+  const { isSearchOpen, setIsSearchOpen, openProductDetail, setActivePage, products } = useShop();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const trendingTags = ['Oversized Tee', 'Tactical Cargo', 'Tech Jacket', 'Heavyweight Hoodie', 'Obsidian'];
+  const trendingTags = ['Tee', 'Hoodie', 'Jacket', 'Pants', 'Black'];
 
   const results = useMemo(() => {
     if (!searchTerm.trim()) return [];
     const q = searchTerm.toLowerCase();
-    return PRODUCTS.filter(
+    return products.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.collection.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.subCategory?.name && p.subCategory.name.toLowerCase().includes(q)) ||
+        (p.slug && p.slug.toLowerCase().includes(q))
     );
-  }, [searchTerm]);
+  }, [searchTerm, products]);
 
   const handleSelectProduct = (id: string) => {
     setIsSearchOpen(false);
@@ -121,33 +120,44 @@ export const SearchModal: React.FC = () => {
                       </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {results.map((product) => (
-                        <div
-                          key={product.id}
-                          onClick={() => handleSelectProduct(product.id)}
-                          className="group flex items-center gap-3.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-black hover:bg-zinc-100 transition-all cursor-pointer shadow-xs"
-                        >
-                          <div className="w-16 h-20 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              referrerPolicy="no-referrer"
-                            />
+                      {results.map((product) => {
+                        const price = product.discountPrice && product.discountPrice < product.price
+                          ? product.discountPrice
+                          : product.price;
+                        return (
+                          <div
+                            key={product._id}
+                            onClick={() => handleSelectProduct(product._id)}
+                            className="group flex items-center gap-3.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-black hover:bg-zinc-100 transition-all cursor-pointer shadow-xs"
+                          >
+                            <div className="w-16 h-20 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
+                              {product.images?.[0]?.secure_url ? (
+                                <img
+                                  src={product.images[0].secure_url}
+                                  alt={product.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  referrerPolicy="no-referrer"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-zinc-200 text-[10px] font-mono">
+                                  N/A
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
+                                {product.subCategory?.name || 'ARCHIVE'}
+                              </span>
+                              <h4 className="text-sm font-bold text-black group-hover:text-zinc-700 truncate">
+                                {product.name}
+                              </h4>
+                              <p className="text-xs font-mono font-bold text-black mt-1">
+                                ${price}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
-                              {product.category}
-                            </span>
-                            <h4 className="text-sm font-bold text-black group-hover:text-zinc-700 truncate">
-                              {product.name}
-                            </h4>
-                            <p className="text-xs font-mono font-bold text-black mt-1">
-                              ${product.price}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ) : (
@@ -166,33 +176,44 @@ export const SearchModal: React.FC = () => {
                     <Sparkles className="w-3.5 h-3.5 text-red-600" /> FEATURED ARCHIVE PIECES
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    {PRODUCTS.slice(0, 3).map((product) => (
-                      <div
-                        key={product.id}
-                        onClick={() => handleSelectProduct(product.id)}
-                        className="group flex items-center gap-3.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-black hover:bg-zinc-100 transition-all cursor-pointer shadow-xs"
-                      >
-                        <div className="w-16 h-20 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            referrerPolicy="no-referrer"
-                          />
+                    {products.slice(0, 3).map((product) => {
+                      const price = product.discountPrice && product.discountPrice < product.price
+                        ? product.discountPrice
+                        : product.price;
+                      return (
+                        <div
+                          key={product._id}
+                          onClick={() => handleSelectProduct(product._id)}
+                          className="group flex items-center gap-3.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-black hover:bg-zinc-100 transition-all cursor-pointer shadow-xs"
+                        >
+                          <div className="w-16 h-20 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
+                            {product.images?.[0]?.secure_url ? (
+                              <img
+                                src={product.images[0].secure_url}
+                                alt={product.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                referrerPolicy="no-referrer"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-zinc-200 text-[10px] font-mono">
+                                N/A
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
+                              {product.subCategory?.name || 'ARCHIVE'}
+                            </span>
+                            <h4 className="text-sm font-bold text-black group-hover:text-zinc-700 truncate">
+                              {product.name}
+                            </h4>
+                            <p className="text-xs font-mono font-bold text-black mt-1">
+                              ${price}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-bold">
-                            {product.collection}
-                          </span>
-                          <h4 className="text-sm font-bold text-black group-hover:text-zinc-700 truncate">
-                            {product.name}
-                          </h4>
-                          <p className="text-xs font-mono font-bold text-black mt-1">
-                            ${product.price}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}

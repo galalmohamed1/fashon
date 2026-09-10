@@ -8,7 +8,7 @@ import { GMLogo } from '../ui/GMLogo';
 export const Footer: React.FC = () => {
   const { setActivePage, setSelectedCategory, setIsSizeGuideOpen } = useShop();
 
-  const handleShopCategory = (cat: Category) => {
+  const handleShopCategory = (cat: string) => {
     setSelectedCategory(cat);
     setActivePage('shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });

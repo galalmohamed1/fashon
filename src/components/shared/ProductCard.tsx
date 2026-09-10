@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Heart, ShoppingBag, Eye, ArrowUpRight, Check } from 'lucide-react';
+import { Heart, ShoppingBag, Check } from 'lucide-react';
 import { Product, ProductColor } from '../../types';
 import { useShop } from '../../lib/context/ShopContext';
 
@@ -17,18 +17,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   showCategory = true
 }) => {
   const { openProductDetail, addToCart, toggleWishlist, isWishlisted } = useShop();
-  const [isHovered, setIsHovered] = useState(false);
-  const [selectedColor, setSelectedColor] = useState<ProductColor>(product.colors[0] || { name: 'Default', hex: '#000' });
-  const [selectedSize, setSelectedSize] = useState<string>(product.sizes[0] || 'M');
+  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: 'Default', hex: '#121214' });
+  const [selectedSize, setSelectedSize] = useState<string>('M');
   const [isQuickAdding, setIsQuickAdding] = useState(false);
   const [showSizeSelector, setShowSizeSelector] = useState(false);
   const [addedRecently, setAddedRecently] = useState(false);
 
-  const wishlisted = isWishlisted(product.id);
+  const productId = product._id;
+  const wishlisted = isWishlisted(productId);
+
+  const hasDiscount = Boolean(product.discountPrice && product.discountPrice < product.price);
+  const currentPrice = hasDiscount ? product.discountPrice : product.price;
+  const originalPrice = hasDiscount ? product.price : undefined;
+  const imageUrl = product.images?.[0]?.secure_url || '';
+  const inStock = product.isActive && !product.isDeleted;
+  const availableSizes = ['S', 'M', 'L', 'XL'];
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (product.sizes.length > 1 && !showSizeSelector) {
+    if (!showSizeSelector) {
       setShowSizeSelector(true);
       return;
     }
@@ -65,12 +72,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => {
-        setIsHovered(false);
         setShowSizeSelector(false);
       }}
-      onClick={() => openProductDetail(product.id)}
+      onClick={() => openProductDetail(productId)}
       className={`group relative flex flex-col cursor-pointer ${className}`}
       data-cursor="view"
     >
@@ -78,26 +83,32 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-zinc-100 border border-zinc-200 group-hover:border-zinc-400 transition-all duration-500">
         
         {/* Main Product Image with Zoom */}
-        <img
-          src={product.image}
-          alt={product.name}
-          className="h-full w-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
-          referrerPolicy="no-referrer"
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="h-full w-full object-cover object-center transition-all duration-700 ease-out group-hover:scale-105"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="h-full w-full flex items-center justify-center bg-zinc-100 text-zinc-400 font-mono text-xs">
+            NO IMAGE
+          </div>
+        )}
 
         {/* Subtle Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-        {/* Badges: Tag / New / Limited */}
+        {/* Badges: Tag / Featured */}
         <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10 pointer-events-none">
-          {product.tag && (
+          {product.isFeatured && (
             <span className="px-2.5 py-1 text-[9px] font-mono font-bold tracking-widest uppercase rounded bg-red-600 text-white shadow-xs">
-              {product.tag}
+              FEATURED
             </span>
           )}
-          {product.isNew && !product.tag && (
+          {hasDiscount && (
             <span className="px-2.5 py-1 text-[9px] font-mono font-bold tracking-widest uppercase rounded bg-black text-white shadow-xs">
-              NEW DROP
+              SALE
             </span>
           )}
         </div>
@@ -106,7 +117,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <button
           onClick={(e) => {
             e.stopPropagation();
-            toggleWishlist(product.id);
+            toggleWishlist(productId);
           }}
           className={`absolute top-3 right-3 z-20 p-2 rounded-full backdrop-blur-md transition-all duration-200 ${
             wishlisted
@@ -132,7 +143,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 SELECT SIZE
               </p>
               <div className="grid grid-cols-4 gap-1.5">
-                {product.sizes.map((size) => (
+                {availableSizes.map((size) => (
                   <button
                     key={size}
                     onClick={(e) => handleSelectSizeAndAdd(size, e)}
@@ -151,7 +162,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <div className="absolute inset-x-3 bottom-3 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
             <button
               onClick={handleQuickAdd}
-              disabled={!product.inStock || isQuickAdding}
+              disabled={!inStock || isQuickAdding}
               className={`w-full py-2.5 px-3 text-xs font-mono font-bold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-md ${
                 addedRecently
                   ? 'bg-emerald-600 text-white'
@@ -162,11 +173,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 <>
                   <Check className="w-3.5 h-3.5" /> ADDED TO BAG
                 </>
-              ) : !product.inStock ? (
+              ) : !inStock ? (
                 'SOLD OUT'
               ) : (
                 <>
-                  <ShoppingBag className="w-3.5 h-3.5" /> QUICK ADD — ${product.price}
+                  <ShoppingBag className="w-3.5 h-3.5" /> QUICK ADD — ${currentPrice}
                 </>
               )}
             </button>
@@ -179,8 +190,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Category & Collection */}
         {showCategory && (
           <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-wider text-zinc-500 font-semibold mb-1">
-            <span>{product.category}</span>
-            <span>{product.collection}</span>
+            <span>{product.subCategory?.name || 'ARCHIVE'}</span>
+            <span>{product.isFeatured ? 'CURATED' : 'ESSENTIAL'}</span>
           </div>
         )}
 
@@ -189,39 +200,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {product.name}
         </h3>
 
-        {/* Price & Color Swatches */}
+        {/* Price */}
         <div className="mt-1.5 flex items-center justify-between">
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-sm sm:text-base font-black text-black">
-              ${product.price}
+              ${currentPrice}
             </span>
-            {product.originalPrice && (
+            {originalPrice && (
               <span className="font-mono text-xs text-zinc-400 line-through">
-                ${product.originalPrice}
-              </span>
-            )}
-          </div>
-
-          {/* Mini Color Swatches */}
-          <div className="flex items-center gap-1">
-            {product.colors.slice(0, 3).map((col) => (
-              <button
-                key={col.name}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedColor(col);
-                }}
-                className={`w-3 h-3 rounded-full transition-transform ${
-                  selectedColor.name === col.name ? 'scale-125 ring-1 ring-black ring-offset-1 ring-offset-white' : 'opacity-70 hover:opacity-100'
-                } ${col.border ? 'border border-zinc-300' : ''}`}
-                style={{ backgroundColor: col.hex }}
-                title={col.name}
-                aria-label={`Select color ${col.name}`}
-              />
-            ))}
-            {product.colors.length > 3 && (
-              <span className="text-[9px] font-mono text-zinc-400 font-semibold">
-                +{product.colors.length - 3}
+                ${originalPrice}
               </span>
             )}
           </div>

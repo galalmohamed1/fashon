@@ -1,42 +1,100 @@
-'use client';
-import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
-import { Product, CartItem, ProductColor, FilterState, ToastMessage, PageView, Category } from '../../types';
-import { PRODUCTS } from '../data/products';
+"use client";
 
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  ReactNode,
+} from "react";
+
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+
+import {
+  Product,
+  CartItem,
+  ProductColor,
+  FilterState,
+  ToastMessage,
+  PageView,
+} from "@/types";
+
+import { getAllProdects } from "@/app/api/services/prodect.services";
+
+import {
+  AddToCart,
+  getLoggedUserCart,
+} from "@/actions/cart.actions";
+
+import {
+  AddToWishlist,
+  getLoggedUserWishlist,
+  RemoveFromWishlist,
+} from "@/actions/wishlist.actions";
 
 interface ShopContextType {
-  // Navigation & Page State
+  // Navigation
   activePage: PageView;
   setActivePage: (page: PageView) => void;
+
   selectedProductId: string | null;
   openProductDetail: (productId: string) => void;
-  selectedCategory: Category;
-  setSelectedCategory: (category: Category) => void;
+
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+
+  // Products
+  products: Product[];
+  getProductById: (id: string) => Product | undefined;
 
   // Cart
   cart: CartItem[];
-  addToCart: (product: Product, color: ProductColor, size: string, quantity?: number, customDesign?: 'kiikii-cat' | 'threadx-logo' | 'minimal-logo' | 'no-logo', customColorHex?: string) => void;
+  addToCart: (
+    product: Product,
+    color: ProductColor,
+    size: string,
+    quantity?: number,
+    customDesign?:
+      | "kiikii-cat"
+      | "threadx-logo"
+      | "minimal-logo"
+      | "no-logo",
+    customColorHex?: string
+  ) => Promise<void>;
+
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, delta: number) => void;
   clearCart: () => void;
+
+  refreshCart: () => Promise<void>;
+
   cartCount: number;
   cartSubtotal: number;
+
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
 
   // Wishlist
   wishlist: string[];
-  toggleWishlist: (productId: string) => void;
+  toggleWishlist: (productId: string) => Promise<void>;
   isWishlisted: (productId: string) => boolean;
 
-  // Modals & Drawers
+  refreshWishlist: () => Promise<void>;
+  wishlistCount: number;
+
+  // Modals
   isSearchOpen: boolean;
   setIsSearchOpen: (open: boolean) => void;
+
   isMobileMenuOpen: boolean;
   setIsMobileMenuOpen: (open: boolean) => void;
+
   isSizeGuideOpen: boolean;
   setIsSizeGuideOpen: (open: boolean) => void;
+
   quickViewProduct: Product | null;
   setQuickViewProduct: (product: Product | null) => void;
 
@@ -47,42 +105,56 @@ interface ShopContextType {
 
   // Toasts
   toasts: ToastMessage[];
-  addToast: (toast: Omit<ToastMessage, 'id'>) => void;
+  addToast: (toast: Omit<ToastMessage, "id">) => void;
   removeToast: (id: string) => void;
-
-  // Helper product queries
-  products: Product[];
-  getProductById: (id: string) => Product | undefined;
 }
 
 const initialFilters: FilterState = {
-  category: 'all',
+  category: "all" as any,
   minPrice: 0,
-  maxPrice: 300,
+  maxPrice: 3000,
   sizes: [],
   colors: [],
-  collection: 'all',
-  sortBy: 'featured',
-  searchQuery: '',
-  onlyInStock: false
+  collection: "all",
+  sortBy: "featured",
+  searchQuery: "",
+  onlyInStock: false,
 };
 
 const ShopContext = createContext<ShopContextType | undefined>(undefined);
 
-export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export default function ShopProvider({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const router = useRouter();
+  const { status } = useSession();
 
-  // Navigation State
-  const [activePage, setActivePage] = useState<PageView>('home');
-  const [selectedProductId, setSelectedProductId] = useState<string | null>('tx-tee-01');
-  const [selectedCategory, setSelectedCategory] = useState<Category>('all');
+  // Products
+  const [products, setProducts] = useState<Product[]>([]);
+
+  // Cart
+  const [cart, setCart] = useState<CartItem[]>([]);
+
+  // Wishlist
+  const [wishlist, setWishlist] = useState<string[]>([]);
+
+  // Navigation
+  const [activePage, setActivePage] = useState<PageView>("home");
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Modals
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(
+    null
+  );
 
   // Filters
   const [filters, setFilters] = useState<FilterState>(initialFilters);
@@ -90,208 +162,345 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-  // Cart State (Persisted in localStorage with safe SSR fallback)
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('threadx_cart');
-        return saved ? JSON.parse(saved) : [];
-      }
-    } catch {
-      return [];
-    }
-    return [];
-  });
+  // =========================
+  // Products
+  // =========================
 
-  // Wishlist State
-  const [wishlist, setWishlist] = useState<string[]>(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        const saved = localStorage.getItem('threadx_wishlist');
-        return saved ? JSON.parse(saved) : ['tx-tee-01', 'tx-jacket-01'];
-      }
-    } catch {
-      return ['tx-tee-01', 'tx-jacket-01'];
-    }
-    return ['tx-tee-01', 'tx-jacket-01'];
-  });
-
-  // Persist cart
   useEffect(() => {
-    try {
-      localStorage.setItem('threadx_cart', JSON.stringify(cart));
-    } catch {
-      // ignore
-    }
-  }, [cart]);
+    const fetchProducts = async () => {
+      try {
+        const data = await getAllProdects();
 
-  // Persist wishlist
+        if (Array.isArray(data)) {
+          setProducts(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // =========================
+  // Cart
+  // =========================
+
+  const refreshCart = useCallback(async () => {
+    try {
+      const response = await getLoggedUserCart();
+
+      if (
+        response?.status === "success" &&
+        Array.isArray(response.data?.products)
+      ) {
+        setCart(response.data.products);
+      } else {
+        setCart([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch cart:", error);
+      setCart([]);
+    }
+  }, []);
+
+  // =========================
+  // Wishlist
+  // =========================
+
+  const refreshWishlist = useCallback(async () => {
+    try {
+      const response = await getLoggedUserWishlist();
+
+      if (
+        response?.status === "success" &&
+        Array.isArray(response.data)
+      ) {
+        const productIds = response.data
+          .map((item: any) => {
+            if (typeof item === "string") {
+              return item;
+            }
+
+            return item?.product?._id ?? item?._id;
+          })
+          .filter(Boolean);
+
+        setWishlist(productIds);
+      } else {
+        setWishlist([]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch wishlist:", error);
+      setWishlist([]);
+    }
+  }, []);
+
+  // Load user data after login
   useEffect(() => {
-    try {
-      localStorage.setItem('threadx_wishlist', JSON.stringify(wishlist));
-    } catch {
-      // ignore
+    if (status === "authenticated") {
+      refreshCart();
+      refreshWishlist();
     }
-  }, [wishlist]);
 
-  // Toast handlers
-  const addToast = (toast: Omit<ToastMessage, 'id'>) => {
+    if (status === "unauthenticated") {
+      setCart([]);
+      setWishlist([]);
+    }
+  }, [status, refreshCart, refreshWishlist]);
+
+  // =========================
+  // Toast
+  // =========================
+
+  const addToast = (toast: Omit<ToastMessage, "id">) => {
     const id = Math.random().toString(36).substring(2, 9);
-    setToasts((prev) => [...prev, { ...toast, id }]);
+
+    setToasts((prev) => [
+      ...prev,
+      {
+        ...toast,
+        id,
+      },
+    ]);
+
     setTimeout(() => {
       removeToast(id);
     }, 4000);
   };
 
   const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   };
 
-  // Open Product Detail
+  // =========================
+  // Navigation
+  // =========================
+
   const openProductDetail = (productId: string) => {
     setSelectedProductId(productId);
     router.push(`/product/${productId}`);
   };
 
+  // =========================
   // Add To Cart
-  const addToCart = (
+  // =========================
+
+  const addToCart = async (
     product: Product,
     color: ProductColor,
     size: string,
     quantity = 1,
-    customDesign?: 'kiikii-cat' | 'threadx-logo' | 'minimal-logo' | 'no-logo',
+    customDesign?:
+      | "kiikii-cat"
+      | "threadx-logo"
+      | "minimal-logo"
+      | "no-logo",
     customColorHex?: string
   ) => {
-    const itemId = `${product.id}-${color.name}-${size}-${customDesign || 'default'}`;
+    try {
+      /*
+       * Current API accepts only productId.
+       * Other parameters are kept to avoid changing
+       * the existing components.
+       */
 
-    setCart((prevCart) => {
-      const existingIndex = prevCart.findIndex((item) => item.id === itemId);
-      if (existingIndex > -1) {
-        const updated = [...prevCart];
-        updated[existingIndex] = {
-          ...updated[existingIndex],
-          quantity: updated[existingIndex].quantity + quantity
-        };
-        return updated;
+      const response = await AddToCart(product._id);
+
+      if (!response) {
+        return;
       }
-      return [
-        ...prevCart,
-        {
-          id: itemId,
-          product,
-          selectedColor: customColorHex ? { ...color, hex: customColorHex } : color,
-          selectedSize: size,
-          quantity,
-          customDesign,
-          customColorHex
-        }
-      ];
-    });
 
-    addToast({
-      title: 'Added to Bag',
-      message: `${product.name} (${size} / ${color.name})`,
-      type: 'cart',
-      image: product.image
-    });
+      await refreshCart();
+
+      addToast({
+        title: "Added to Bag",
+        message: product.name,
+        type: "cart",
+        image: product.images?.[0]?.secure_url,
+      });
+    } catch (error) {
+      console.error("Failed to add product to cart:", error);
+    }
   };
 
-  // Remove from Cart
+  // =========================
+  // Remove From Cart
+  // =========================
+
   const removeFromCart = (itemId: string) => {
-    const item = cart.find((i) => i.id === itemId);
-    setCart((prev) => prev.filter((i) => i.id !== itemId));
-    if (item) {
-      addToast({
-        title: 'Removed from Bag',
-        message: `${item.product.name}`,
-        type: 'info'
-      });
-    }
+    // TODO: Add Remove From Cart API
+    console.log("Remove from cart:", itemId);
   };
 
-  // Update Quantity
+  // =========================
+  // Update Cart Quantity
+  // =========================
+
   const updateQuantity = (itemId: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.id === itemId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
+    // TODO: Add Update Cart Quantity API
+    console.log("Update cart quantity:", {
+      itemId,
+      delta,
+    });
   };
 
+  // =========================
   // Clear Cart
+  // =========================
+
   const clearCart = () => {
-    setCart([]);
+    // TODO: Add Clear Cart API
+    console.log("Clear cart");
   };
 
-  // Wishlist actions
-  const toggleWishlist = (productId: string) => {
-    const product = PRODUCTS.find((p) => p.id === productId);
-    const wasWishlisted = wishlist.includes(productId);
+  // =========================
+  // Wishlist
+  // =========================
 
-    if (wasWishlisted) {
-      setWishlist((prev) => prev.filter((id) => id !== productId));
+  const toggleWishlist = async (productId: string) => {
+    const product = products.find(
+      (item) => item._id === productId
+    );
+
+    const isAlreadyWishlisted = wishlist.includes(productId);
+
+    try {
+      if (isAlreadyWishlisted) {
+        const response = await RemoveFromWishlist(productId);
+
+        if (response?.status === "unauthenticated") {
+          addToast({
+            title: "Login Required",
+            message: "Please login to manage your wishlist.",
+            type: "info",
+          });
+
+          return;
+        }
+
+        setWishlist((prev) =>
+          prev.filter((id) => id !== productId)
+        );
+
+        addToast({
+          title: "Removed from Wishlist",
+          message: product?.name,
+          type: "info",
+        });
+
+        return;
+      }
+
+      const response = await AddToWishlist(productId);
+
+      if (response?.status === "unauthenticated") {
+        addToast({
+          title: "Login Required",
+          message: "Please login to manage your wishlist.",
+          type: "info",
+        });
+
+        return;
+      }
+
+      setWishlist((prev) =>
+        prev.includes(productId)
+          ? prev
+          : [...prev, productId]
+      );
+
       addToast({
-        title: 'Removed from Wishlist',
-        message: product ? product.name : undefined,
-        type: 'info'
+        title: "Saved to Wishlist",
+        message: product?.name,
+        type: "success",
+        image: product?.images?.[0]?.secure_url,
       });
-    } else {
-      setWishlist((prev) => (prev.includes(productId) ? prev : [...prev, productId]));
-      addToast({
-        title: 'Saved to Wishlist',
-        message: product ? product.name : undefined,
-        type: 'success',
-        image: product?.image
-      });
+    } catch (error) {
+      console.error("Failed to update wishlist:", error);
     }
   };
 
-  const isWishlisted = (productId: string) => wishlist.includes(productId);
+  const isWishlisted = (productId: string) => {
+    return wishlist.includes(productId);
+  };
 
-  // Cart Metrics
+  // =========================
+  // Cart Calculations
+  // =========================
+
   const cartCount = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity, 0);
+    return cart.reduce(
+      (total, item) => total + (item.quantity ?? 0),
+      0
+    );
   }, [cart]);
 
   const cartSubtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+    return cart.reduce(
+      (total, item) =>
+        total + (item.price ?? 0) * (item.quantity ?? 0),
+      0
+    );
   }, [cart]);
+
+  // =========================
+  // Wishlist Count
+  // =========================
+
+  const wishlistCount = wishlist.length;
+
+  // =========================
+  // Filters
+  // =========================
 
   const resetFilters = () => {
     setFilters(initialFilters);
   };
 
+  // =========================
+  // Product Helper
+  // =========================
+
   const getProductById = (id: string) => {
-    return PRODUCTS.find((p) => p.id === id);
+    return products.find((product) => product._id === id);
   };
 
   return (
     <ShopContext.Provider
       value={{
+        // Navigation
         activePage,
         setActivePage,
         selectedProductId,
         openProductDetail,
         selectedCategory,
         setSelectedCategory,
+
+        // Products
+        products,
+        getProductById,
+
+        // Cart
         cart,
         addToCart,
         removeFromCart,
         updateQuantity,
         clearCart,
+        refreshCart,
         cartCount,
         cartSubtotal,
         isCartOpen,
         setIsCartOpen,
+
+        // Wishlist
         wishlist,
         toggleWishlist,
         isWishlisted,
+        refreshWishlist,
+        wishlistCount,
+
+        // Modals
         isSearchOpen,
         setIsSearchOpen,
         isMobileMenuOpen,
@@ -300,25 +509,31 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setIsSizeGuideOpen,
         quickViewProduct,
         setQuickViewProduct,
+
+        // Filters
         filters,
         setFilters,
         resetFilters,
+
+        // Toasts
         toasts,
         addToast,
         removeToast,
-        products: PRODUCTS,
-        getProductById
       }}
     >
       {children}
     </ShopContext.Provider>
   );
-};
+}
 
 export const useShop = () => {
   const context = useContext(ShopContext);
+
   if (!context) {
-    throw new Error('useShop must be used within a ShopProvider');
+    throw new Error(
+      "useShop must be used within a ShopProvider"
+    );
   }
+
   return context;
 };

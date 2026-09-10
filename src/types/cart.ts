@@ -2,11 +2,15 @@ import { Product } from "./product";
 
 export interface CartItem {
   _id: string;
-  product: string | Product;
+  product: Product;
   quantity: number;
   size?: string;
   color?: string;
   price: number;
+  selectedColor?: { name: string; hex: string; border?: boolean };
+  selectedSize?: string;
+  customDesign?: 'kiikii-cat' | 'threadx-logo' | 'minimal-logo' | 'no-logo';
+  customColorHex?: string;
 }
  
 export interface Cart {

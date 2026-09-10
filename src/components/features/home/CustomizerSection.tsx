@@ -1,15 +1,12 @@
 'use client';
 import React, { useState } from 'react';
-import { ShoppingBag, Sparkles, Check, RefreshCw, Palette, Ruler, Stamp, ArrowUpRight } from 'lucide-react';
-
+import { ShoppingBag, Sparkles, Check, Palette, Ruler, Stamp } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
-import { PRODUCTS } from '../../../lib/data/products';
-
 import { TShirtPhoto } from '../products/TShirt3D';
 import img from '../../../assets/kiikii-tshirt.png';
 
 export const CustomizerSection: React.FC = () => {
-  const { addToCart, setIsCartOpen } = useShop();
+  const { addToCart, products } = useShop();
 
   // Customizer state
   const colors: { name: string; hex: string; border?: boolean }[] = [
@@ -35,10 +32,11 @@ export const CustomizerSection: React.FC = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const baseProduct = PRODUCTS.find((p) => p.id === 'tx-tee-01') || PRODUCTS[0];
-  const customPrice = 59;
+  const baseProduct = products[0];
+  const customPrice = baseProduct ? (baseProduct.discountPrice && baseProduct.discountPrice < baseProduct.price ? baseProduct.discountPrice : baseProduct.price) : 59;
 
   const handleAddToCart = () => {
+    if (!baseProduct) return;
     setIsAdding(true);
 
     // Call store
@@ -235,7 +233,7 @@ export const CustomizerSection: React.FC = () => {
 
               <button
                 onClick={handleAddToCart}
-                disabled={isAdding}
+                disabled={isAdding || !baseProduct}
                 className={`w-full py-4 px-6 rounded-xl font-mono text-xs uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-3 transition-all duration-300 shadow-md cursor-pointer ${
                   isSuccess
                     ? 'bg-emerald-600 text-white'

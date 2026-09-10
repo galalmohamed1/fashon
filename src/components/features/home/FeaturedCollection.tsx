@@ -1,24 +1,19 @@
 'use client';
 import React from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '../../shared/ProductCard';
-import { PRODUCTS } from '../../../lib/data/products';
 import { useShop } from '../../../lib/context/ShopContext';
 
 export const FeaturedCollection: React.FC = () => {
-  const { setActivePage, setSelectedCategory } = useShop();
+  const { setActivePage, setSelectedCategory, products } = useShop();
 
-  // Get 4 key flagship pieces across T-Shirts, Hoodies, Jackets, Pants
-  const featuredPieces = [
-    PRODUCTS.find((p) => p.id === 'tx-tee-01')!,
-    PRODUCTS.find((p) => p.id === 'tx-hoodie-01')!,
-    PRODUCTS.find((p) => p.id === 'tx-jacket-01')!,
-    PRODUCTS.find((p) => p.id === 'tx-pants-01')!
-  ].filter(Boolean);
+  // Get key featured pieces from real API
+  const featured = products.filter((p) => p.isFeatured).slice(0, 4);
+  const featuredPieces = featured.length > 0 ? featured : products.slice(0, 4);
 
   const handleExploreCollection = (category?: string) => {
-    if (category) setSelectedCategory(category as any);
+    if (category) setSelectedCategory(category);
     setActivePage('shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -93,7 +88,7 @@ export const FeaturedCollection: React.FC = () => {
                 </p>
                 <button
                   onClick={() => handleExploreCollection('hoodies')}
-                  className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-white uppercase hover:text-red-400 transition-colors"
+                  className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-white uppercase hover:text-red-400 transition-colors cursor-pointer"
                 >
                   DISCOVER HOODIES <ArrowRight className="w-3.5 h-3.5" />
                 </button>
@@ -101,10 +96,10 @@ export const FeaturedCollection: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Right: 4 Editorial Product Cards (Tee, Hoodie, Jacket, Cargo) */}
+          {/* Right: 4 Editorial Product Cards */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
             {featuredPieces.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product._id} product={product} />
             ))}
           </div>
 
@@ -116,7 +111,7 @@ export const FeaturedCollection: React.FC = () => {
             onClick={() => handleExploreCollection()}
             className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-black hover:bg-zinc-800 text-white font-mono text-xs uppercase tracking-[0.2em] font-bold transition-all duration-300 group cursor-pointer shadow-md"
           >
-            VIEW ALL 18 ARCHIVAL RELEASES
+            VIEW ALL ARCHIVAL RELEASES
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </button>
         </div>

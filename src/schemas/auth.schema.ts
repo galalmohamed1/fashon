@@ -29,7 +29,7 @@ export const RegisterSchema = zod
       .min(8, '*Password must be at least 8 characters long')
       .max(16, '*Password must not exceed 16 characters'),
 
-    // rePassword: zod.string().nonempty('*Please confirm your password'),
+    rePassword: zod.string().nonempty('*Please confirm your password'),
 
     terms: zod.boolean().refine((val) => val === true, '*You must accept the terms and conditions'),
   })

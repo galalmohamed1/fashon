@@ -14,6 +14,12 @@ export async function userRegister(data: RegisterSchemaType) {
             body: JSON.stringify(data),
             headers: { 'Content-Type': 'application/json' },
         })
+      const result = await res.json();
+      return {
+        ok: res.ok,
+        data: result,
+        error: result?.message || null,
+      };
     }catch{}
 }
 // forgotPasswords
@@ -59,13 +65,17 @@ export async function resetPassword(data: ResetPasswordSchemaType) {
   }
 }
 // verifyResetCode
-export async function verifyResetCode(data: OtpSchemaType) {
+export async function verifyResetCode(email: string,
+  data: OtpSchemaType) {
   try {
-    const res = await fetch('https://backend-lamsa.vercel.app/api/auth/verifyResetCode', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ resetCode: data.otp }),
-    });
+    const res = await fetch(
+      "https://backend-lamsa.vercel.app/api/auth/verify-email",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, resetCode: data.otp }),
+      },
+    );
     const result = await res.json();
     return {
       ok: res.ok,

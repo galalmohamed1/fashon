@@ -11,14 +11,20 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { FaRegUserCircle } from 'react-icons/fa';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { FiUser } from 'react-icons/fi';
+import { IoMdSettings } from 'react-icons/io';
+import { signOut, useSession } from 'next-auth/react';
+import { FaBoxOpen, FaRegAddressBook, FaRegHeart, FaRightFromBracket } from 'react-icons/fa6';
 
 export const Navbar: React.FC = () => {
   const {
@@ -54,10 +60,13 @@ export const Navbar: React.FC = () => {
     { label: 'HOME', page: '/' },
     { label: 'SHOP', page: '/shop' },
     { label: 'COLLECTIONS', page: '/collections' },
-    { label: 'SALE', page: '/sale' },
   ];
 
+  const {data:myData , status}= useSession();
 
+  function mySignOut() {
+    signOut({ redirect: true, callbackUrl: '/login' });
+  }
   return (
     <>
       <header
@@ -69,7 +78,7 @@ export const Navbar: React.FC = () => {
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
   {/* Left: Desktop Navigation Links */}
-  <nav className="hidden lg:flex items-center gap-3">
+  <nav className="hidden lg:flex items-center gap-5">
     {navLinks.map((link) => {
   const isActive = activePage === link.page;
   return (
@@ -150,29 +159,99 @@ export const Navbar: React.FC = () => {
         {cartCount}
       </span> */}
     </button>
-    <DropdownMenu>
-      <DropdownMenuTrigger className="cursor-pointer">
-        <Button variant="ghost" size="icon" className="cursor-pointer rounded-full">
-          <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-32 cursor-pointer">
-        <DropdownMenuGroup>
-          <DropdownMenuItem className='cursor-pointer hover:bg-gray-600 hover:text-white'>Profile</DropdownMenuItem>
-          <Link href="/about">
-            <DropdownMenuItem className='cursor-pointer hover:bg-gray-600 hover:text-white'>About</DropdownMenuItem>
-          </Link>
-          <DropdownMenuItem className='cursor-pointer hover:bg-gray-600 hover:text-white'>Settings</DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem variant="destructive" className='cursor-pointer hover:bg-red-600 hover:text-white'>Log out</DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    {status === 'unauthenticated' ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="hidden lg:flex items-center gap-2 ml-2 px-5 py-2.5 rounded-full bg-black hover:bg-zinc-800 text-white text-sm font-semibold transition-colors shadow-sm shadow-green-600/20"
+                  >
+                    <FiUser />
+                    Sign In
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger className="hidden lg:flex items-center gap-1.5 text-gray-600 hover:text-green-600 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-center  w-10 h-10 rounded-full hover:bg-gray-100 transition-colors group border-0">
+                        <FaRegUserCircle className="text-xl text-gray-500 group-hover:text-green-600 transition-colors" />
+                      </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuGroup>
+                        <DropdownMenuLabel className="flex items-center gap-3 p-4 border-b mb-1 border-gray-100">
+                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                            <FaRegUserCircle className="text-xl text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800 truncate">
+                              {myData?.user?.name}
+                            </p>
+                            <p className="font-semibold text-gray-500 truncate">
+                              {myData?.user?.email}
+                            </p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem>
+                          <Link
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            href="/profile/addresses"
+                          >
+                            <FiUser className="w-4 text-gray-400" />
+                            My Profile
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            href="/allorders"
+                          >
+                            <FaBoxOpen className="w-4 text-gray-400" />
+                            My Orders
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            href="/wishlist"
+                          >
+                            <FaRegHeart className="w-4 text-gray-400" />
+                            My Wishlist
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            href="/profile/addresses"
+                          >
+                            <FaRegAddressBook className="w-4 text-gray-400" />
+                            Addresses
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            href="/profile/settings"
+                          >
+                            <IoMdSettings className="w-4 text-gray-400" />
+                            Settings
+                          </Link>
+                        </DropdownMenuItem>
+                      </DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        <div
+                          onClick={mySignOut}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                        >
+                          <FaRightFromBracket className="text-xs" />
+                          <span>Sign Out</span>
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
 
     {/* Mobile Menu Button */}
     <button
