@@ -7,9 +7,10 @@ export interface CartItem {
   size?: string;
   color?: string;
   price: number;
+  subTotal?: number;
   selectedColor?: { name: string; hex: string; border?: boolean };
   selectedSize?: string;
-  customDesign?: 'kiikii-cat' | 'threadx-logo' | 'minimal-logo' | 'no-logo';
+  customDesign?: "kiikii-cat" | "threadx-logo" | "minimal-logo" | "no-logo";
   customColorHex?: string;
 }
  

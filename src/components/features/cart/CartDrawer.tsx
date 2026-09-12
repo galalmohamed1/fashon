@@ -140,9 +140,9 @@ export const CartDrawer: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                cart.map((item) => (
+                cart.map((item, index) => (
                   <div
-                    key={item._id}
+                    key={item.product._id + index}
                     className="flex gap-4 p-3 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-colors shadow-xs"
                   >
                     {/* Item Image */}
@@ -163,7 +163,7 @@ export const CartDrawer: React.FC = () => {
                             {item.product.name}
                           </h4>
                           <button
-                            onClick={() => removeFromCart(item._id)}
+                            onClick={() => removeFromCart(item.product._id)}
                             className="text-zinc-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
                             title="Remove item"
                           >
@@ -171,19 +171,25 @@ export const CartDrawer: React.FC = () => {
                           </button>
                         </div>
 
-                        {/* Specs */}
-                        <div className="flex items-center gap-2 mt-1 text-[11px] font-mono text-zinc-600">
-                          <span>SIZE: <strong className="text-black font-bold">{item.selectedSize}</strong></span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            COLOR:
-                            <span
-                              className="w-2.5 h-2.5 rounded-full inline-block border border-zinc-300"
-                              style={{ backgroundColor: item.selectedColor.hex }}
-                            />
-                            <strong className="text-black font-bold">{item.selectedColor.name}</strong>
-                          </span>
-                        </div>
+                        {/* Specs — تتعرض بس لو موجودة فعلاً */}
+                        {(item.selectedSize || item.selectedColor) && (
+                          <div className="flex items-center gap-2 mt-1 text-[11px] font-mono text-zinc-600">
+                            {item.selectedSize && (
+                              <span>SIZE: <strong className="text-black font-bold">{item.selectedSize}</strong></span>
+                            )}
+                            {item.selectedSize && item.selectedColor && <span>•</span>}
+                            {item.selectedColor && (
+                              <span className="flex items-center gap-1">
+                                COLOR:
+                                <span
+                                  className="w-2.5 h-2.5 rounded-full inline-block border border-zinc-300"
+                                  style={{ backgroundColor: item.selectedColor.hex }}
+                                />
+                                <strong className="text-black font-bold">{item.selectedColor.name}</strong>
+                              </span>
+                            )}
+                          </div>
+                        )}
 
                         {item.customDesign && (
                           <span className="inline-block mt-1 px-1.5 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-[9px] font-mono uppercase font-bold">
@@ -196,7 +202,7 @@ export const CartDrawer: React.FC = () => {
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center border border-zinc-300 rounded-lg bg-white">
                           <button
-                            onClick={() => updateQuantity(item._id, -1)}
+                            onClick={() => updateQuantity(item.product._id, -1)}
                             className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer"
                             aria-label="Decrease quantity"
                           >
@@ -206,7 +212,7 @@ export const CartDrawer: React.FC = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item._id, 1)}
+                            onClick={() => updateQuantity(item.product._id, 1)}
                             className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer"
                             aria-label="Increase quantity"
                           >
@@ -215,7 +221,7 @@ export const CartDrawer: React.FC = () => {
                         </div>
 
                         <span className="font-mono text-sm font-bold text-black">
-                          ${((item.product.discountPrice && item.product.discountPrice < item.product.price ? item.product.discountPrice : item.product.price) * item.quantity).toFixed(2)}
+                          ${(item.subTotal ?? item.price * item.quantity).toFixed(2)}
                         </span>
                       </div>
                     </div>

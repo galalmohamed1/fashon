@@ -3,11 +3,23 @@ import React from 'react';
 import { Heart, ArrowLeft } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
 import { ProductCard } from '../../shared/ProductCard';
+import Link from 'next/link';
 
 export const WishlistPage: React.FC = () => {
-  const { wishlist, products, setActivePage } = useShop();
+  // const { wishlist, products, setActivePage } = useShop();
 
+  const { wishlist, products, isWishlistLoading, isProductsLoading } = useShop();
+  
   const wishlistedProducts = products.filter((p) => wishlist.includes(p._id));
+  const isLoading = isWishlistLoading || isProductsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pt-10 pb-24 bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-10 pb-24 bg-white">
@@ -27,12 +39,12 @@ export const WishlistPage: React.FC = () => {
             </h1>
           </div>
 
-          <button
-            onClick={() => setActivePage('shop')}
+          <Link
+            href={'/shop'}
             className="inline-flex items-center gap-2 text-xs font-mono uppercase text-zinc-600 hover:text-black font-bold transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" /> CONTINUE BROWSING
-          </button>
+          </Link>
         </div>
 
         {wishlistedProducts.length === 0 ? (
@@ -41,15 +53,15 @@ export const WishlistPage: React.FC = () => {
             <h3 className="font-display font-black text-xl text-black uppercase">
               NO SAVED ITEMS IN YOUR VAULT
             </h3>
-            <p className="text-zinc-600 text-xs font-mono mt-2 max-w-sm mx-auto">
+            <p className="text-zinc-600 text-xs font-mono mt-2 mb-8 max-w-sm mx-auto">
               Click the heart icon on any garment to curate your private wishlist.
             </p>
-            <button
-              onClick={() => setActivePage('shop')}
+            <Link
+              href={'/shop'}
               className="mt-6 px-8 py-3.5 rounded-xl bg-black text-white font-mono text-xs uppercase font-bold tracking-widest hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               EXPLORE COLLECTION
-            </button>
+            </Link>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">

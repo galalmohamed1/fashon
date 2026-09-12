@@ -48,6 +48,7 @@ interface ShopContextType {
 
   // Products
   products: Product[];
+  isProductsLoading: boolean;
   getProductById: (id: string) => Product | undefined;
 
   // Cart
@@ -80,10 +81,12 @@ interface ShopContextType {
   // Wishlist
   wishlist: string[];
   toggleWishlist: (productId: string) => Promise<void>;
+  isWishlistLoading: boolean;
   isWishlisted: (productId: string) => boolean;
 
   refreshWishlist: () => Promise<void>;
   wishlistCount: number;
+  
 
   // Modals
   isSearchOpen: boolean;
@@ -139,6 +142,43 @@ export default function ShopProvider({
 
   // Wishlist
   const [wishlist, setWishlist] = useState<string[]>([]);
+  // في ShopContext.tsx - ضيف state جديدة
+const [isWishlistLoading, setIsWishlistLoading] = useState(true);
+const [isProductsLoading, setIsProductsLoading] = useState(true);
+
+useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const data = await getAllProdects();
+      if (Array.isArray(data)) setProducts(data);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setIsProductsLoading(false);
+    }
+  };
+  fetchProducts();
+}, []);
+
+const refreshWishlist = useCallback(async () => {
+  setIsWishlistLoading(true);
+  try {
+    const response = await getLoggedUserWishlist();
+    if (response?.success && Array.isArray(response.data)) {
+      const productIds = response.data
+        .map((item: any) => (typeof item === "string" ? item : item?.product?._id ?? item?._id))
+        .filter(Boolean);
+      setWishlist(productIds);
+    } else {
+      setWishlist([]);
+    }
+  } catch (error) {
+    console.error("Failed to fetch wishlist:", error);
+    setWishlist([]);
+  } finally {
+    setIsWishlistLoading(false);
+  }
+}, []);
 
   // Navigation
   const [activePage, setActivePage] = useState<PageView>("home");
@@ -208,33 +248,33 @@ export default function ShopProvider({
   // Wishlist
   // =========================
 
-  const refreshWishlist = useCallback(async () => {
-    try {
-      const response = await getLoggedUserWishlist();
+  // const refreshWishlist = useCallback(async () => {
+  //   try {
+  //     const response = await getLoggedUserWishlist();
 
-      if (
-        response?.status === "success" &&
-        Array.isArray(response.data)
-      ) {
-        const productIds = response.data
-          .map((item: any) => {
-            if (typeof item === "string") {
-              return item;
-            }
+  //     if (
+  //       response?.status === "success" &&
+  //       Array.isArray(response.data)
+  //     ) {
+  //       const productIds = response.data
+  //         .map((item: any) => {
+  //           if (typeof item === "string") {
+  //             return item;
+  //           }
 
-            return item?.product?._id ?? item?._id;
-          })
-          .filter(Boolean);
+  //           return item?.product?._id ?? item?._id;
+  //         })
+  //         .filter(Boolean);
 
-        setWishlist(productIds);
-      } else {
-        setWishlist([]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch wishlist:", error);
-      setWishlist([]);
-    }
-  }, []);
+  //       setWishlist(productIds);
+  //     } else {
+  //       setWishlist([]);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to fetch wishlist:", error);
+  //     setWishlist([]);
+  //   }
+  // }, []);
 
   // Load user data after login
   useEffect(() => {
@@ -499,6 +539,8 @@ export default function ShopProvider({
         isWishlisted,
         refreshWishlist,
         wishlistCount,
+        isProductsLoading,
+        isWishlistLoading,
 
         // Modals
         isSearchOpen,

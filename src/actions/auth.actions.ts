@@ -73,7 +73,7 @@ export async function verifyResetCode(email: string,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, resetCode: data.otp }),
+        body: JSON.stringify({ email, otp: data.otp }),
       },
     );
     const result = await res.json();

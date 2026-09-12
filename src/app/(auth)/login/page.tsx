@@ -43,7 +43,6 @@ function page() {
       callbackUrl: "/",
     });
     if (response?.ok) {
-      // Save the email so Auto-Fill can use it on the next visit
       await update();
 
       if (refreshWishlist) {
@@ -57,9 +56,8 @@ function page() {
       router.replace("/");
       router.refresh();
     } else {
-      const msg = response?.error ?? "An unexpected error occurred. Please try again.";
-      setErrorMessage(msg);
-      toast.error(msg);
+      setErrorMessage("An unexpected error occurred. Please try again.");
+      toast.error(response?.error);
     }
     setLoading(false);
   }

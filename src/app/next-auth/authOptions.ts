@@ -28,13 +28,14 @@ export const authOptions: NextAuthOptions = {
             throw new Error(result.message);
           }
           console.log('resulttttttttttt', result);
-          const jwt: { id: string } = jwtDecode(result.token);
+          const { token, user } = result.data;
+          const jwt: { id: string } = jwtDecode(token);
           return {
             id: jwt.id,
-            name: result.user.name,
-            email: result.user.email,
-            role: result.user.role,
-            accessToken: result.token,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            accessToken: token,
             provider: "credentials",
           };
         } catch (err) {
