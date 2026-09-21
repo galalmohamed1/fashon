@@ -27,6 +27,9 @@ import { getAllProdects } from "@/app/api/services/prodect.services";
 import {
   AddToCart,
   getLoggedUserCart,
+  RemoveProduct,
+  RemoveAllProductsFromCart,
+  UpdateProductQuantity,
 } from "@/actions/cart.actions";
 
 import {
@@ -66,9 +69,11 @@ interface ShopContextType {
     customColorHex?: string
   ) => Promise<void>;
 
-  removeFromCart: (itemId: string) => void;
-  updateQuantity: (itemId: string, delta: number) => void;
-  clearCart: () => void;
+  removeFromCart: (itemId: string) => Promise<void>;
+  updateQuantity: (itemId: string, delta: number) => Promise<void>;
+  updatingItemId: string | null;
+  clearCart: () => Promise<void>;
+  isClearingCart: boolean;
 
   refreshCart: () => Promise<void>;
 
@@ -243,6 +248,7 @@ const refreshWishlist = useCallback(async () => {
       setCart([]);
     }
   }, []);
+  
 
   // =========================
   // Wishlist
@@ -368,30 +374,103 @@ const refreshWishlist = useCallback(async () => {
   // Remove From Cart
   // =========================
 
-  const removeFromCart = (itemId: string) => {
-    // TODO: Add Remove From Cart API
-    console.log("Remove from cart:", itemId);
+  const removeFromCart = async (itemId: string) => {
+  try {
+    const response = await RemoveProduct(itemId);
+
+    if (!response?.success) {
+      addToast({
+        title: "Could not remove item",
+        message: response?.message ?? "Please try again.",
+        type: "warning",
+      });
+      return;
+    }
+
+    await refreshCart();
+
+    addToast({
+      title: "Removed from Bag",
+      type: "info",
+    });
+  } catch (error) {
+    console.error("Failed to remove from cart:", error);
+  }
   };
 
   // =========================
   // Update Cart Quantity
   // =========================
 
-  const updateQuantity = (itemId: string, delta: number) => {
-    // TODO: Add Update Cart Quantity API
-    console.log("Update cart quantity:", {
-      itemId,
-      delta,
-    });
+  const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
+
+  const updateQuantity = async (itemId: string, delta: number) => {
+    // Find the current item to calculate new quantity
+    const currentItem = cart.find(
+      (item) => item.product._id === itemId || item._id === itemId
+    );
+    if (!currentItem) return;
+
+    const newQty = (currentItem.quantity ?? 1) + delta;
+    if (newQty < 1) return; // prevent going below 1
+
+    setUpdatingItemId(itemId);
+    try {
+      const response = await UpdateProductQuantity(itemId, newQty);
+      if (!response?.success) {
+        addToast({
+          title: "Could not update item",
+          message: response?.message ?? "Please try again.",
+          type: "warning",
+        });
+        return;
+      }
+
+      await refreshCart();
+    } catch (error) {
+      console.error("Failed to update cart:", error);
+      addToast({
+        title: "Error updating quantity",
+        type: "warning",
+      });
+    } finally {
+      setUpdatingItemId(null);
+    }
   };
 
   // =========================
   // Clear Cart
   // =========================
 
-  const clearCart = () => {
-    // TODO: Add Clear Cart API
-    console.log("Clear cart");
+  const [isClearingCart, setIsClearingCart] = useState(false);
+
+  const clearCart = async () => {
+    setIsClearingCart(true);
+    try {
+      const response = await RemoveAllProductsFromCart();
+      if (!response?.success) {
+        addToast({
+          title: "Could not clear cart",
+          message: response?.message ?? "Please try again.",
+          type: "warning",
+        });
+        return;
+      }
+      setCart([]);
+      addToast({
+        title: "Cart Cleared",
+        message: "All items have been removed.",
+        type: "info",
+      });
+    } catch (error) {
+      console.error("Failed to clear cart:", error);
+      addToast({
+        title: "Error clearing cart",
+        type: "warning",
+      });
+    } finally {
+      setIsClearingCart(false);
+    }
   };
 
   // =========================
@@ -526,7 +605,9 @@ const refreshWishlist = useCallback(async () => {
         addToCart,
         removeFromCart,
         updateQuantity,
+        updatingItemId,
         clearCart,
+        isClearingCart,
         refreshCart,
         cartCount,
         cartSubtotal,

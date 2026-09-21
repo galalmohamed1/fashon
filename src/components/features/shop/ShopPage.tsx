@@ -20,7 +20,7 @@ export const ShopPage: React.FC = () => {
     { id: 'hoodies', label: 'HOODIES' },
     { id: 'jackets', label: 'JACKETS' },
     { id: 'pants', label: 'PANTS' },
-    { id: 'accessories', label: 'ACCESSORIES' }
+    { id: 'pajamas', label: 'Pajamas' }
   ];
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE SIZE'];

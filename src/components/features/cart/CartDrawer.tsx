@@ -1,8 +1,9 @@
 'use client';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, Sparkles } from 'lucide-react';
+import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, Sparkles, AlertTriangle } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
+import Link from 'next/link';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -11,6 +12,9 @@ export const CartDrawer: React.FC = () => {
     cart,
     removeFromCart,
     updateQuantity,
+    updatingItemId,
+    clearCart,
+    isClearingCart,
     cartSubtotal,
     cartCount,
     setActivePage,
@@ -20,6 +24,7 @@ export const CartDrawer: React.FC = () => {
   const [promoCode, setPromoCode] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [appliedCode, setAppliedCode] = useState('');
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const freeShippingThreshold = 150;
   const progressPercent = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
@@ -59,7 +64,7 @@ export const CartDrawer: React.FC = () => {
   return (
     <AnimatePresence>
       {isCartOpen && (
-        <div className="fixed inset-0 z-[9997] overflow-hidden">
+        <div className="fixed inset-0 z-9997 overflow-hidden">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -81,17 +86,53 @@ export const CartDrawer: React.FC = () => {
             <div className="p-5 sm:p-6 border-b border-zinc-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-black" />
-                <h3 className="font-display font-black text-lg text-black uppercase tracking-wide">
+                <h3 className="font-display font-black text-xs text-black uppercase tracking-wide">
                   SHOPPING BAG ({cartCount})
                 </h3>
               </div>
-              <button
-                onClick={() => setIsCartOpen(false)}
-                className="p-2 rounded-full text-zinc-500 hover:text-black hover:bg-zinc-100 transition-colors cursor-pointer"
-                aria-label="Close bag"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {/* Clear All Button — only shown when cart has items */}
+                {cart.length > 0 && (
+                  confirmClear ? (
+                    <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-lg px-2 py-1">
+                      <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                      <span className="text-[10px] font-mono font-bold text-red-700 uppercase">Sure?</span>
+                      <button
+                        onClick={async () => { await clearCart(); setConfirmClear(false); }}
+                        disabled={isClearingCart}
+                        className="text-[10px] font-mono font-bold text-red-700 hover:text-red-900 underline disabled:opacity-50 cursor-pointer"
+                      >
+                        {isClearingCart ? 'Clearing…' : 'Yes'}
+                      </button>
+                      <span className="text-red-300">·</span>
+                      <button
+                        onClick={() => setConfirmClear(false)}
+                        disabled={isClearingCart}
+                        className="text-[10px] font-mono font-bold text-zinc-500 hover:text-black underline disabled:opacity-50 cursor-pointer"
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmClear(true)}
+                      disabled={isClearingCart}
+                      title="Remove all items"
+                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-zinc-200 text-zinc-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors text-[10px] font-mono font-bold uppercase cursor-pointer disabled:opacity-40"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      CLEAR ALL
+                    </button>
+                  )
+                )}
+                <button
+                  onClick={() => { setIsCartOpen(false); setConfirmClear(false); }}
+                  className="p-2 rounded-full text-zinc-500 hover:text-black hover:bg-zinc-100 transition-colors cursor-pointer"
+                  aria-label="Close bag"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Free Shipping Progress Bar */}
@@ -146,13 +187,16 @@ export const CartDrawer: React.FC = () => {
                     className="flex gap-4 p-3 rounded-xl bg-zinc-50 border border-zinc-200 hover:border-zinc-300 transition-colors shadow-xs"
                   >
                     {/* Item Image */}
-                    <div className="w-20 h-24 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
-                      <img
-                        src={item.product.images?.[0]?.secure_url || ''}
-                        alt={item.product.name}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
+                    <div className="w-20 h-24 rounded-lg overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200">
+                      <Link
+                        href={`/product/${item.product._id}`}>
+                        <img
+                          src={item.product.images?.[0]?.secure_url || ''}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                         />
+                      </Link>
                     </div>
 
                     {/* Item Info */}
@@ -203,20 +247,30 @@ export const CartDrawer: React.FC = () => {
                         <div className="flex items-center border border-zinc-300 rounded-lg bg-white">
                           <button
                             onClick={() => updateQuantity(item.product._id, -1)}
-                            className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer"
+                            disabled={updatingItemId === item.product._id || item.quantity <= 1}
+                            className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer disabled:opacity-40" 
                             aria-label="Decrease quantity"
                           >
-                            <Minus className="w-3 h-3" />
+                            {updatingItemId === item.product._id ? (
+                              <span className="w-3 h-3 border-2 border-zinc-400 border-t-black rounded-full animate-spin block" />
+                            ) : (
+                              <Minus className="w-3 h-3" />
+                            )}
                           </button>
                           <span className="px-2.5 font-mono text-xs font-bold text-black">
                             {item.quantity}
                           </span>
                           <button
                             onClick={() => updateQuantity(item.product._id, 1)}
-                            className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer"
+                            disabled={updatingItemId === item.product._id}
+                            className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer disabled:opacity-40  "
                             aria-label="Increase quantity"
                           >
-                            <Plus className="w-3 h-3" />
+                            {updatingItemId === item.product._id ? (
+                              <span className="w-3 h-3 border-2 border-zinc-400 border-t-black rounded-full animate-spin block" />
+                            ) : (
+                              <Plus className="w-3 h-3" />
+                            )}
                           </button>
                         </div>
 
@@ -243,7 +297,7 @@ export const CartDrawer: React.FC = () => {
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value)}
                       placeholder="PROMO CODE (e.g. GM10)"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-zinc-300 text-xs font-mono uppercase text-black placeholder:text-zinc-400 focus:outline-none focus:border-black"
+                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-zinc-300 text-xs font-mono uppercase text-black focus:outline-none"
                     />
                   </div>
                   <button

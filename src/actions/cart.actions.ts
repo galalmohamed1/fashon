@@ -51,37 +51,41 @@ export async function getLoggedUserCart() {
     },
   };
 }
-// export async function UpdateProductQuantity(productId: string, count: number) {
-//   const token = await getAccessToken();
-//   const res = await fetch(
-//     `https://ecommerce.routemisr.com/api/v2/cart/${productId}`,
-//     {
-//       method: "PUT",
-//       headers: { token: token as string, "content-type": "application/json" },
-//       body: JSON.stringify({ count: count }),
-//     },
-//   );
-//   const data = await res.json();
-//   return data;
-// }
-// export async function RemoveProduct(productId: string) {
-//   const token = await getAccessToken();
-//   const res = await fetch(
-//     `https://ecommerce.routemisr.com/api/v2/cart/${productId}`,
-//     {
-//       method: "DELETE",
-//       headers: { token: token as string, "content-type": "application/json" },
-//     },
-//   );
-//   const data = await res.json();
-//   return data;
-// }
-// export async function RemoveAllProductsFromCart() {
-//   const token = await getAccessToken();
-//   const res = await fetch(`https://ecommerce.routemisr.com/api/v2/cart`, {
-//     method: "DELETE",
-//     headers: { token: token as string, "content-type": "application/json" },
-//   });
-//   const data = await res.json();
-//   return data;
-// }
+
+export async function RemoveProduct(productId: string) {
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/item/${productId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+    },
+  );
+  const data = await res.json();
+  return data;
+}
+export async function RemoveAllProductsFromCart() {
+  const token = await getAccessToken();
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/cart`, {
+    method: "DELETE",
+    headers: { token: token as string, "content-type": "application/json" },
+  });
+  const data = await res.json();
+  return data;
+}
+export async function UpdateProductQuantity(productId: string, quantity: number) {
+  const token = await getAccessToken();
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/${productId}`,
+    {
+      method: "PUT",
+      headers: { token: token as string, "content-type": "application/json" },
+      body: JSON.stringify({ quantity: quantity }),
+    },
+  );
+  const data = await res.json();
+  return data;
+}

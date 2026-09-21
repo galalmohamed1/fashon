@@ -16,6 +16,7 @@ type CartContextType = {
   numOfCartItems: number;
   setnumOfCartItems: React.Dispatch<React.SetStateAction<number>>;
   refreshCart: () => Promise<void>;
+  updateCartCount: (delta: number) => void;
 };
 
 export const CartContext = createContext<CartContextType | null>(null);
@@ -58,6 +59,11 @@ export default function CartContextProvider({
     }
   }, []);
 
+  /** Optimistically update the cart badge count by a delta (+1 or -1) */
+  const updateCartCount = (delta: number) => {
+    setnumOfCartItems((prev) => Math.max(0, prev + delta));
+  };
+
   useEffect(() => {
     if (status === "authenticated") {
       refreshCart();
@@ -74,6 +80,7 @@ export default function CartContextProvider({
         numOfCartItems,
         setnumOfCartItems,
         refreshCart,
+        updateCartCount,
       }}
     >
       {children}

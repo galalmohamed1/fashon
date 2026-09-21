@@ -6,13 +6,15 @@ import { MagneticButton } from '../../ui/MagneticButton';
 import { useShop } from '../../../lib/context/ShopContext';
 import { TShirtPhoto } from '../products/TShirt3D';
 import img from '../../../assets/kiikii-tshirt.png';
+import { useRouter } from 'next/navigation';
 
 export const Hero: React.FC = () => {
   const { setActivePage, setSelectedCategory } = useShop();
+  const router = useRouter();
 
   const handleShopClick = () => {
     setSelectedCategory('all');
-    setActivePage('shop');
+    router.push('/shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

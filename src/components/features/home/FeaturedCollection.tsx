@@ -4,17 +4,18 @@ import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '../../shared/ProductCard';
 import { useShop } from '../../../lib/context/ShopContext';
+import { useRouter } from 'next/navigation';
 
 export const FeaturedCollection: React.FC = () => {
   const { setActivePage, setSelectedCategory, products } = useShop();
-
+  const router = useRouter();
   // Get key featured pieces from real API
   const featured = products.filter((p) => p.isFeatured).slice(0, 4);
   const featuredPieces = featured.length > 0 ? featured : products.slice(0, 4);
 
   const handleExploreCollection = (category?: string) => {
     if (category) setSelectedCategory(category);
-    setActivePage('shop');
+    router.push('/shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

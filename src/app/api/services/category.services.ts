@@ -3,7 +3,7 @@ import { ApiListResponse, ApiSingleResponse } from "@/types/product";
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`);
+    const res = await fetch(`https://backend-lamsa.vercel.app/api/categories`);
     const data: ApiListResponse<Category> = await res.json();
     return data.data;
   } catch (error) {
@@ -14,7 +14,9 @@ export async function getCategories(): Promise<Category[]> {
 // GET /api/categories/:id
 export async function getSingleCategory(id: string): Promise<Category> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories/${id}`);
+    const res = await fetch(
+      `https://backend-lamsa.vercel.app/api/categories/${id}`,
+    );
     const data: ApiSingleResponse<Category> = await res.json();
     return data.data;
   } catch (error) {

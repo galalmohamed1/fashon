@@ -2,9 +2,10 @@ import { Product, ProductsResponse } from "@/types/product";
 
 export async function getAllProdects(): Promise<Product[] | undefined> {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`, {
-            cache: 'force-cache'
-        })
+        const res = await fetch(
+          `https://backend-lamsa.vercel.app/api/products`,
+          
+        );
         const data: ProductsResponse = await res.json();
         return data.data;
     } catch {
@@ -14,7 +15,9 @@ export async function getAllProdects(): Promise<Product[] | undefined> {
 
 export async function getSingelProdect(id: string): Promise<Product>{
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products/${id}`);
+        const res = await fetch(
+          `https://backend-lamsa.vercel.app/api/products/${id}`,
+        );
         const data = await res.json();
         return data.data;
     } catch (error) {
