@@ -1,12 +1,18 @@
 'use client';
 import React from 'react';
+import { usePathname } from 'next/navigation';
 import { ArrowUpRight, Globe, Shield, Truck, RefreshCw } from 'lucide-react';
 import { useShop } from '../../lib/context/ShopContext';
 import { Category } from '../../types';
 import { GMLogo } from '../ui/GMLogo';
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
   const { setActivePage, setSelectedCategory, setIsSizeGuideOpen } = useShop();
+
+  if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   const handleShopCategory = (cat: string) => {
     setSelectedCategory(cat);

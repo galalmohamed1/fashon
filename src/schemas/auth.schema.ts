@@ -19,8 +19,7 @@ export const RegisterSchema = zod
     password: zod
       .string()
       .nonempty('*Please enter your password')
-      .refine((val) => /[A-Z]/.test(val), '*Password must contain at least one uppercase letter')
-      .refine((val) => /[a-z]/.test(val), '*Password must contain at least one lowercase letter')
+      .refine((val) => /[a-zA-Z]/.test(val), '*Password must contain at least one letter')
       .refine((val) => /\d/.test(val), '*Password must contain at least one number')
       .refine(
         (val) => /[^\w\d\s:]/.test(val),
@@ -32,19 +31,15 @@ export const RegisterSchema = zod
     rePassword: zod.string().nonempty('*Please confirm your password'),
 
     terms: zod.boolean().refine((val) => val === true, '*You must accept the terms and conditions'),
-  })
-//   .refine((object) => object.password === object.rePassword, {
-//     message: 'password & rePassword not matched !',
-//     path: ['rePassword'],
-//   });
+  });
+
 // UpdatePasswordSchema
 export const UpdatePasswordSchema = zod
   .object({
     password: zod
       .string()
       .nonempty('*Please enter your password')
-      .refine((val) => /[A-Z]/.test(val), '*Password must contain at least one uppercase letter')
-      .refine((val) => /[a-z]/.test(val), '*Password must contain at least one lowercase letter')
+      .refine((val) => /[a-zA-Z]/.test(val), '*Password must contain at least one letter')
       .refine((val) => /\d/.test(val), '*Password must contain at least one number')
       .refine(
         (val) => /[^\w\d\s:]/.test(val),
@@ -55,8 +50,7 @@ export const UpdatePasswordSchema = zod
     newPassword: zod
       .string()
       .nonempty('*Please enter your new password')
-      .refine((val) => /[A-Z]/.test(val), '*Password must contain at least one uppercase letter')
-      .refine((val) => /[a-z]/.test(val), '*Password must contain at least one lowercase letter')
+      .refine((val) => /[a-zA-Z]/.test(val), '*Password must contain at least one letter')
       .refine((val) => /\d/.test(val), '*Password must contain at least one number')
       .refine(
         (val) => /[^\w\d\s:]/.test(val),
@@ -70,6 +64,7 @@ export const UpdatePasswordSchema = zod
     message: 'New Password & rePassword not matched !',
     path: ['rePassword'],
   });
+
 // UpdatePersonalDetailsSchema
 export const UpdatePersonalDetailsSchema = zod.object({
   name: zod
@@ -84,6 +79,7 @@ export const UpdatePersonalDetailsSchema = zod.object({
     .nonempty('*Please enter your phone number')
     .regex(/^(?:\+20|0)1[0125][0-9]{8}$/, '*Only Egyptian phone numbers are allowed'),
 });
+
 // Add address
 export const AddAddressSchema = zod.object({
   name: zod.string().max(20),
@@ -91,14 +87,14 @@ export const AddAddressSchema = zod.object({
   phone: zod.string().max(11),
   city: zod.string().max(20),
 });
+
 // NewPasswordSchema
 export const NewPasswordSchema = zod
   .object({
     newPassword: zod
       .string()
       .nonempty('*Please enter your new password')
-      .refine((val) => /[A-Z]/.test(val), '*Password must contain at least one uppercase letter')
-      .refine((val) => /[a-z]/.test(val), '*Password must contain at least one lowercase letter')
+      .refine((val) => /[a-zA-Z]/.test(val), '*Password must contain at least one letter')
       .refine((val) => /\d/.test(val), '*Password must contain at least one number')
       .refine(
         (val) => /[^\w\d\s:]/.test(val),
@@ -112,26 +108,20 @@ export const NewPasswordSchema = zod
     message: 'New Password & rePassword not matched !',
     path: ['rePassword'],
   });
+
 // LoginSchema
 export const LoginSchema = zod.object({
   email: zod.string().nonempty('*Please enter your email').email('*Invalid email address'),
   password: zod
     .string()
-    .nonempty('*Please enter your password')
-    .refine((val) => /[A-Z]/.test(val), '*Password must contain at least one uppercase letter')
-    .refine((val) => /[a-z]/.test(val), '*Password must contain at least one lowercase letter')
-    .refine((val) => /\d/.test(val), '*Password must contain at least one number')
-    .refine(
-      (val) => /[^\w\d\s:]/.test(val),
-      '*Password must contain at least one special character',
-    )
-    .min(8, '*Password must be at least 8 characters long')
-    .max(16, '*Password must not exceed 16 characters'),
+    .nonempty('*Please enter your password'),
 });
+
 // forgotPasswordSchema
 export const forgotPasswordSchema = zod.object({
   email: zod.string().nonempty('*Please enter your email').email('Email is required'),
 });
+
 // otpSchema
 export const otpSchema = zod.object({
   otp: zod
@@ -139,6 +129,7 @@ export const otpSchema = zod.object({
     .length(6, '*OTP must be exactly 6 digits')
     .regex(/^\d+$/, '*OTP must contain only numbers'),
 });
+
 // ResetPasswordSchema
 export const ResetPasswordSchema = zod
   .object({
@@ -146,8 +137,7 @@ export const ResetPasswordSchema = zod
     newPassword: zod
       .string()
       .nonempty('*Please enter your new password')
-      .refine((val) => /[A-Z]/.test(val), '*Password must contain at least one uppercase letter')
-      .refine((val) => /[a-z]/.test(val), '*Password must contain at least one lowercase letter')
+      .refine((val) => /[a-zA-Z]/.test(val), '*Password must contain at least one letter')
       .refine((val) => /\d/.test(val), '*Password must contain at least one number')
       .refine(
         (val) => /[^\w\d\s:]/.test(val),
@@ -161,6 +151,7 @@ export const ResetPasswordSchema = zod
     message: 'New Password & rePassword not matched !',
     path: ['rePassword'],
   });
+
 // Types
 export type OtpSchemaType = zod.infer<typeof otpSchema>;
 export type RegisterSchemaType = zod.infer<typeof RegisterSchema>;

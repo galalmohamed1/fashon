@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Outfit, Space_Grotesk, Syne, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 // import { ShopProvider } from '../lib/context/ShopContext';
+import { Suspense } from 'react';
 import { ToastContainer } from '../components/ui/ToastContainer';
 import { SearchModal } from '../components/layout/SearchModal';
 import { SizeGuideModal } from '../components/features/products/SizeGuideModal';
@@ -10,6 +11,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import Providers from './providers/providers';
 import { Toaster } from 'sonner';
+import { RouteTransitionLoader } from '../components/ui/RouteTransitionLoader';
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' });
@@ -27,13 +29,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`scroll-smooth ${outfit.variable} ${spaceGrotesk.variable} ${syne.variable} ${jetBrainsMono.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`scroll-smooth ${outfit.variable} ${spaceGrotesk.variable} ${syne.variable} ${jetBrainsMono.variable}`}>
       <body className="bg-white text-zinc-950 antialiased selection:bg-black selection:text-white min-h-screen flex flex-col overflow-x-hidden font-sans"cz-shortcut-listen="true">
         <Providers>
           <ToastContainer />
           <SearchModal />
           <SizeGuideModal />
           <CartDrawer />
+          <Suspense fallback={null}>
+            <RouteTransitionLoader />
+          </Suspense>
           
           <Navbar />
           <Toaster

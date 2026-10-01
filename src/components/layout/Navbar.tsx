@@ -5,6 +5,7 @@ import { Search, ShoppingBag, Heart, Menu, X, ArrowRight, User } from 'lucide-re
 import { useShop } from '../../lib/context/ShopContext';
 import { GMLogo } from '../ui/GMLogo';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
   Avatar,
   AvatarFallback,
@@ -25,8 +26,10 @@ import { FiUser } from 'react-icons/fi';
 import { IoMdSettings } from 'react-icons/io';
 import { signOut, useSession } from 'next-auth/react';
 import { FaBoxOpen, FaRegAddressBook, FaRegHeart, FaRightFromBracket } from 'react-icons/fa6';
+import { ShieldAlert } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
+  const pathname = usePathname();
   const {
     activePage,
     setActivePage,
@@ -66,6 +69,10 @@ export const Navbar: React.FC = () => {
 
   function mySignOut() {
     signOut({ redirect: true, callbackUrl: '/login' });
+  }
+
+  if (pathname?.startsWith('/dashboard')) {
+    return null;
   }
   return (
     <>
@@ -192,6 +199,17 @@ export const Navbar: React.FC = () => {
                             </p>
                           </div>
                         </DropdownMenuLabel>
+                        {(myData?.user as any)?.role === 'admin' && (
+                          <DropdownMenuItem>
+                            <Link
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-black bg-zinc-100 hover:bg-zinc-200 transition-colors rounded"
+                              href="/dashboard"
+                            >
+                              <ShieldAlert className="w-4 text-black" />
+                              Admin Dashboard
+                            </Link>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem>
                           <Link
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
@@ -273,7 +291,7 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-white flex flex-col justify-between p-6 sm:p-8"
+            className="fixed inset-0 z-9999 bg-white flex flex-col justify-between p-6 sm:p-8"
           >
             {/* Header with Close */}
             <div className="flex items-center justify-between pb-6 border-b border-zinc-200">

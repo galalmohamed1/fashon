@@ -23,6 +23,8 @@ import img from '../../../assets/kiikii-tshirt.png';
 
 import { ProductCard } from '../../shared/ProductCard';
 import { TShirtPhoto } from './TShirt3D';
+import Link from 'next/link';
+import { LiquidLogoLoader } from '../../ui/LiquidLogoLoader';
 
 export const ProductDetailPage: React.FC = () => {
   const params = useParams();
@@ -81,9 +83,11 @@ export const ProductDetailPage: React.FC = () => {
   if (loading && !product) {
     return (
       <div className="min-h-screen pt-28 pb-24 bg-white flex items-center justify-center">
-        <div className="text-center font-mono text-xs uppercase tracking-widest text-zinc-500">
-          LOADING ARCHIVE SPECIFICATION...
-        </div>
+        <LiquidLogoLoader
+          autoLoop={true}
+          size={135}
+          statusText="LOADING ARCHIVE SPECIFICATION..."
+        />
       </div>
     );
   }
@@ -150,12 +154,12 @@ export const ProductDetailPage: React.FC = () => {
         
         {/* Top Breadcrumb Bar */}
         <div className="flex items-center gap-2 text-xs font-mono uppercase text-zinc-500 mb-8 font-medium">
-          <button
-            onClick={() => setActivePage('shop')}
+          <Link
+            href="/shop"
             className="hover:text-black flex items-center gap-1 transition-colors cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> SHOP ARCHIVE
-          </button>
+          </Link>
           <span>/</span>
           <span className="text-zinc-500">{product.subCategory?.name || 'ARCHIVE'}</span>
           <span>/</span>
@@ -169,7 +173,7 @@ export const ProductDetailPage: React.FC = () => {
           <div className="lg:col-span-7 flex flex-col gap-4">
             
             {/* 3D Mode Toggle Button */}
-            <div className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 shadow-xs">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-zinc-50 border border-zinc-200 shadow-xs max-w-md mx-auto w-full">
               <span className="text-xs font-mono text-zinc-600 font-semibold flex items-center gap-1.5 pl-2">
                 <Sparkles className="w-3.5 h-3.5 text-red-600" /> INTERACTIVE 3D PREVIEW
               </span>
@@ -195,11 +199,11 @@ export const ProductDetailPage: React.FC = () => {
 
             {/* Viewport: Either 3D Canvas or High-Res Photography */}
             {view3DMode ? (
-              <div className="w-full rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-lg">
+              <div className="w-full max-w-md mx-auto rounded-2xl overflow-hidden border border-zinc-200 bg-white shadow-lg">
                 <TShirtPhoto src={img.src} />
               </div>
             ) : (
-              <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-lg group">
+              <div className="relative aspect-[3/4] w-full max-w-md mx-auto rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-lg group">
                 {gallery.length > 0 ? (
                   <img
                     src={gallery[activeImageIndex] || gallery[0]}
@@ -244,7 +248,7 @@ export const ProductDetailPage: React.FC = () => {
 
             {/* Thumbnails Row */}
             {!view3DMode && gallery.length > 1 && (
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-3 max-w-md mx-auto w-full">
                 {gallery.map((imgUrl, idx) => (
                   <button
                     key={idx}

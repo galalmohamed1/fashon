@@ -12,6 +12,7 @@ import React, {
 
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { triggerRouteLoading } from "@/components/ui/RouteTransitionLoader";
 
 import {
   Product,
@@ -324,6 +325,7 @@ const refreshWishlist = useCallback(async () => {
   // =========================
 
   const openProductDetail = (productId: string) => {
+    triggerRouteLoading();
     setSelectedProductId(productId);
     router.push(`/product/${productId}`);
   };

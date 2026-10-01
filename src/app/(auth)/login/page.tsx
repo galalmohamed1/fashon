@@ -3,8 +3,8 @@ import { GMLogo } from '@/components/ui/GMLogo';
 import { AlertCircle, ArrowRight, Lock, Mail, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { signIn, useSession } from "next-auth/react";
-import { useContext, useState } from 'react';
+import { signIn, useSession, getSession } from "next-auth/react";
+import { useContext, useState, useEffect } from 'react';
 import { WishlistContext } from '@/lib/context/WishlistContext';
 import { LoginSchema, LoginSchemaType } from '@/schemas/auth.schema';
 import { Controller, useForm } from "react-hook-form";
@@ -19,12 +19,20 @@ import { IoLockClosed } from "react-icons/io5";
 
 function page() {
   const router = useRouter();
-  const { update } = useSession();
+  const { data: sessionData, status, update } = useSession();
   const wishlistContext = useContext(WishlistContext);
   const refreshWishlist = wishlistContext?.refreshWishlist;
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+
+  // If already authenticated, redirect immediately based on role
+  useEffect(() => {
+    if (status === "authenticated" && sessionData?.user) {
+      const role = (sessionData.user as any)?.role;
+      window.location.href = role === "admin" ? "/dashboard" : "/";
+    }
+  }, [status, sessionData]);
 
   const form = useForm<LoginSchemaType>({
     defaultValues: {
@@ -37,29 +45,36 @@ function page() {
 
   async function mySubmit(data: LoginSchemaType) {
     setLoading(true);
+    setErrorMessage(null);
+
     const response = await signIn("credentials", {
       ...data,
       redirect: false,
-      callbackUrl: "/",
     });
+
     if (response?.ok) {
+      // Update session then fetch to get the freshest role
       await update();
+      const session = await getSession();
+      const role = (session?.user as any)?.role;
 
       if (refreshWishlist) {
-        await refreshWishlist();
+        try { await refreshWishlist(); } catch { /* ignore */ }
       }
 
-      toast.success(
-        "Hey! Good to see you. Welcome back! You are now logged in ❤️💕"
-      );
-
-      router.replace("/");
-      router.refresh();
+      if (role === "admin") {
+        toast.success("Welcome back, Admin!");
+        // Hard navigation ensures proxy.ts sees the new cookie & redirects correctly
+        window.location.replace("/dashboard");
+      } else {
+        toast.success("Hey! Good to see you. Welcome back! You are now logged in ❤️💕");
+        window.location.replace("/");
+      }
     } else {
       setErrorMessage("An unexpected error occurred. Please try again.");
       toast.error(response?.error);
+      setLoading(false);
     }
-    setLoading(false);
   }
   return (
     <>

@@ -26,6 +26,7 @@ export interface Product {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
+  stock: number;
   __v: number;
 }
 
