@@ -162,12 +162,17 @@ export const ShopPage: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
-                className={`px-5 py-2.5 rounded-full font-mono text-xs uppercase tracking-widest transition-all whitespace-nowrap cursor-pointer ${
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-mono text-xs uppercase tracking-widest transition-all whitespace-nowrap cursor-pointer ${
                   isSelected
                     ? 'bg-black text-white font-bold shadow-md'
                     : 'bg-zinc-100 text-zinc-700 hover:text-black hover:bg-zinc-200 border border-zinc-200'
                 }`}
               >
+                {/* @ts-ignore */}
+                {cat.image && (
+                  /* @ts-ignore */
+                  <img src={cat.image} alt={cat.label} className="w-5 h-5 object-cover rounded-full" />
+                )}
                 {cat.label}
               </button>
             );
@@ -178,7 +183,7 @@ export const ShopPage: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-zinc-50 border border-zinc-200 mb-8">
           
           {/* Left Controls: Filter Drawer Toggle & Search */}
-          <div className="flex items-center gap-3 flex-1 min-w-[260px]">
+          <div className="flex items-center gap-3 flex-1 min-w-65">
             <button
               onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-mono text-xs uppercase tracking-wider transition-all cursor-pointer font-bold ${

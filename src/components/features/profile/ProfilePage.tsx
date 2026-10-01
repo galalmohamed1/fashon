@@ -28,14 +28,6 @@ const navItems = [
     text: 'text-green-600',
   },
   {
-    label: 'My Orders',
-    href: '/allorders',
-    icon: ShoppingBag,
-    description: 'Track & view orders',
-    bg: 'bg-blue-50',
-    text: 'text-blue-600',
-  },
-  {
     label: 'Wishlist',
     href: '/wishlist',
     icon: Heart,
@@ -89,7 +81,7 @@ export function ProfilePage() {
   const role = (user as any)?.role;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-green-50/30 pt-24 pb-16 px-4 sm:px-6">
+    <div className="min-h-screen bg-linear-to-br from-zinc-50 via-white to-green-50/30 pt-24 pb-16 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto space-y-8">
 
         {/* ── Header Card ── */}
@@ -101,20 +93,20 @@ export function ProfilePage() {
         >
           {/* Decorative gradient blobs */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-gradient-to-br from-green-200/40 to-emerald-300/20 blur-3xl" />
-            <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-gradient-to-tr from-green-100/30 to-teal-200/20 blur-2xl" />
+            <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-linear-to-br from-green-200/40 to-emerald-300/20 blur-3xl" />
+            <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-linear-to-tr from-green-100/30 to-teal-200/20 blur-2xl" />
           </div>
 
           <div className="relative p-6 sm:p-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar */}
-            <div className="relative flex-shrink-0">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-200">
+            <div className="relative shrink-0">
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-linear-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-green-200">
                 <span className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
                   {getInitials(user?.name)}
                 </span>
               </div>
               {role === 'admin' && (
-                <div className="absolute -top-2 -right-2 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg px-2 py-0.5 flex items-center gap-1 shadow-md">
+                <div className="absolute -top-2 -right-2 bg-linear-to-br from-amber-400 to-orange-500 rounded-lg px-2 py-0.5 flex items-center gap-1 shadow-md">
                   <Shield className="w-3 h-3 text-white" />
                   <span className="text-[10px] font-bold text-white uppercase tracking-wide">Admin</span>
                 </div>
@@ -151,7 +143,7 @@ export function ProfilePage() {
             {/* Edit button */}
             <Link
               href="/profile/settings"
-              className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 shadow-md"
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white text-sm font-medium hover:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 shadow-md"
             >
               <Edit3 className="w-3.5 h-3.5" />
               Edit Profile
@@ -182,7 +174,7 @@ export function ProfilePage() {
                     href={item.href}
                     className="group flex items-center gap-4 p-4 rounded-2xl bg-white border border-zinc-100 shadow-sm hover:shadow-md hover:border-zinc-200 transition-all duration-200 hover:-translate-y-0.5"
                   >
-                    <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
+                    <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200`}>
                       <Icon className={`w-5 h-5 ${item.text}`} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -191,7 +183,7 @@ export function ProfilePage() {
                       </p>
                       <p className="text-xs text-zinc-400 mt-0.5">{item.description}</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 group-hover:translate-x-1 transition-all duration-200 flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-zinc-300 group-hover:text-zinc-500 group-hover:translate-x-1 transition-all duration-200 shrink-0" />
                   </Link>
                 </motion.div>
               );
@@ -208,7 +200,7 @@ export function ProfilePage() {
         >
           <button
             onClick={() => signOut({ redirect: true, callbackUrl: '/login' })}
-            className="group inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-red-50 text-red-500 font-medium text-sm border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all duration-200 hover:scale-105 active:scale-95"
+            className="group cursor-pointer inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-red-50 text-red-500 font-medium text-sm border border-red-100 hover:bg-red-100 hover:text-red-600 transition-all duration-200 hover:scale-105 active:scale-95"
           >
             <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             Sign Out
