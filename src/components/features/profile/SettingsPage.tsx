@@ -135,8 +135,8 @@ function ProfileTab({ user, routeToken }: { user: any; routeToken?: string }) {
     if (!validate()) return;
     setStatus('loading');
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/updateMe`, {
-        method: 'PATCH',
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/resetPassword`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${routeToken}`,

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ShieldCheck,
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useShop } from '../../../lib/context/ShopContext';
+import Link from 'next/link';
 
 export const CheckoutPage: React.FC = () => {
   const { cart, cartSubtotal, clearCart, setActivePage } = useShop();
@@ -33,7 +34,7 @@ export const CheckoutPage: React.FC = () => {
     cardNumber: '',
     cardExp: '',
     cardCvc: '',
-    paymentMethod: 'card' as 'card' | 'apple' | 'klarna'
+    paymentMethod: 'card' as 'card' | 'apple' | 'Instapay'
   });
 
   const [deliveryMethod, setDeliveryMethod] = useState<'standard' | 'express'>('standard');
@@ -41,6 +42,33 @@ export const CheckoutPage: React.FC = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [useSavedAddress, setUseSavedAddress] = useState<boolean>(false);
+
+  const handleSelectSavedAddress = (addr: any) => {
+    setUseSavedAddress(true);
+    setFormData(prev => ({
+      ...prev,
+      firstName: addr.recipient?.split(' ')[0] || '',
+      lastName: addr.recipient?.split(' ').slice(1).join(' ') || '',
+      address: addr.street || '',
+      city: addr.city || '',
+      state: addr.state || '',
+      zip: addr.zipCode || '',
+    }));
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem('user_addresses');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.length > 0) {
+        setSavedAddresses(parsed);
+        const defaultAddr = parsed.find((a: any) => a.isDefault) || parsed[0];
+        handleSelectSavedAddress(defaultAddr);
+      }
+    }
+  }, []);
 
   const shippingCost = deliveryMethod === 'standard' ? (cartSubtotal >= 150 ? 0 : 12) : 24;
   const estimatedTax = Number((cartSubtotal * 0.08).toFixed(2));
@@ -171,16 +199,16 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-24 sm:pt-28 pb-24 bg-white">
+    <div className="min-h-screen pt-18 sm:pt-18 pb-18 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Back Link */}
-        <button
-          onClick={() => setActivePage('shop')}
+        <Link
+          href="/shop"
           className="flex items-center gap-2 text-xs font-mono text-zinc-600 hover:text-black mb-8 uppercase font-bold transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> BACK TO SHOPPING
-        </button>
+        </Link>
 
         {/* Checkout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
@@ -243,6 +271,7 @@ export const CheckoutPage: React.FC = () => {
                         className="w-full px-4 py-3 rounded-xl bg-white border border-zinc-300 text-xs font-mono text-black focus:outline-none focus:border-black uppercase font-medium"
                       >
                         <option value="United States">United States (USD)</option>
+                        <option value="Egypt">Egypt (EG)</option>
                         <option value="United Kingdom">United Kingdom (GBP)</option>
                         <option value="Japan">Japan (JPY)</option>
                         <option value="Germany">Germany (EUR)</option>
@@ -264,6 +293,62 @@ export const CheckoutPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-4">
+                  {savedAddresses.length > 0 && (
+                    <div className="mb-6">
+                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-3 font-bold">
+                        SELECT SAVED ADDRESS
+                      </label>
+                      <div className="space-y-3">
+                        {savedAddresses.map((addr: any) => (
+                          <label
+                            key={addr.id}
+                            onClick={() => handleSelectSavedAddress(addr)}
+                            className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                              useSavedAddress && formData.address === addr.street
+                                ? 'border-black bg-white text-black shadow-xs'
+                                : 'border-zinc-200 bg-zinc-100 text-zinc-600 hover:border-zinc-400'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                checked={useSavedAddress && formData.address === addr.street}
+                                onChange={() => {}}
+                                className="accent-black"
+                              />
+                              <div>
+                                <p className="font-mono text-xs font-bold uppercase text-black">{addr.name}</p>
+                                <p className="text-[11px] text-zinc-500">{addr.street}, {addr.city}</p>
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                        <label
+                          onClick={() => {
+                            setUseSavedAddress(false);
+                            setFormData(prev => ({ ...prev, firstName: '', lastName: '', address: '', city: '', state: '', zip: '' }));
+                          }}
+                          className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                            !useSavedAddress
+                              ? 'border-black bg-white text-black shadow-xs'
+                              : 'border-zinc-200 bg-zinc-100 text-zinc-600 hover:border-zinc-400'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              checked={!useSavedAddress}
+                              onChange={() => {}}
+                              className="accent-black"
+                            />
+                            <p className="font-mono text-xs font-bold uppercase text-black">USE A DIFFERENT ADDRESS</p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={`space-y-4 ${useSavedAddress ? 'opacity-50 pointer-events-none' : ''}`}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
@@ -357,6 +442,7 @@ export const CheckoutPage: React.FC = () => {
                         } text-xs font-mono text-black focus:outline-none focus:border-black`}
                       />
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>
@@ -458,14 +544,14 @@ export const CheckoutPage: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData((p) => ({ ...p, paymentMethod: 'klarna' }))}
+                    onClick={() => setFormData((p) => ({ ...p, paymentMethod: 'Instapay' }))}
                     className={`py-3 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
-                      formData.paymentMethod === 'klarna'
+                      formData.paymentMethod === 'Instapay'
                         ? 'bg-black text-white border-black shadow-xs'
                         : 'bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400'
                     }`}
                   >
-                    KLARNA
+                    INSTAPAY
                   </button>
                 </div>
 
@@ -536,11 +622,16 @@ export const CheckoutPage: React.FC = () => {
                   </div>
                 )}
 
-                {formData.paymentMethod === 'klarna' && (
+                {formData.paymentMethod === 'Instapay' && (
                   <div className="p-6 rounded-xl bg-zinc-100 border border-zinc-200 text-center">
-                    <p className="text-xs font-mono text-zinc-700">
-                      Pay in 4 interest-free payments of <strong className="text-black font-bold">${(finalTotal / 4).toFixed(2)}</strong> every 2 weeks.
+                    <p className="text-xs font-mono text-zinc-700 pb-4">
+                       Pay via InstaPay to <strong>01003044257</strong>, then send the payment screenshot on WhatsApp.
                     </p>
+                    <button className='w-full py-4 rounded-2xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-[0.25em] font-bold flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer'>
+                      <a href="https://wa.me/201003044257" target="_blank" rel="noopener noreferrer">
+                        WhatsApp
+                      </a>
+                    </button>
                   </div>
                 )}
 
@@ -573,8 +664,8 @@ export const CheckoutPage: React.FC = () => {
 
             {/* Items */}
             <div className="space-y-4 max-h-72 overflow-y-auto pr-2 pb-4 mb-6 border-b border-zinc-200">
-              {cart.map((item) => (
-                <div key={item._id} className="flex items-center gap-3.5">
+              {cart.map((item: any, index: number) => (
+                <div key={item._id || item.id || index} className="flex items-center gap-3.5">
                   <div className="w-14 h-18 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
                     <img
                       src={item.product.images?.[0]?.secure_url || ''}

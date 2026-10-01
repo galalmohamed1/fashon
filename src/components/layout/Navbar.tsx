@@ -223,13 +223,13 @@ export const Navbar: React.FC = () => {
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
-                          <Link
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
-                            href="/allorders"
+                          <button
+                            className="w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            onClick={() => setIsCartOpen(true)}
                           >
                             <FaBoxOpen className="w-4 text-gray-400" />
                             My Orders
-                          </Link>
+                          </button>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Link
@@ -243,7 +243,7 @@ export const Navbar: React.FC = () => {
                         <DropdownMenuItem>
                           <Link
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
-                            href="/profile/addresses"
+                            href="/profile/address"
                           >
                             <FaRegAddressBook className="w-4 text-gray-400" />
                             Addresses
