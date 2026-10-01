@@ -168,33 +168,36 @@ export const Navbar: React.FC = () => {
     </button>
     {status === 'unauthenticated' ? (
                 <>
+                  {/* Desktop: full button / Mobile: icon-only */}
                   <Link
                     href="/login"
-                    className="hidden lg:flex items-center gap-2 ml-2 px-5 py-2.5 rounded-full bg-black hover:bg-zinc-800 text-white text-sm font-semibold transition-colors shadow-sm shadow-green-600/20"
+                    className="flex items-center gap-2 lg:ml-2 lg:px-5 lg:py-2.5 p-2 rounded-full bg-black hover:bg-zinc-800 text-white text-sm font-semibold transition-colors shadow-sm shadow-green-600/20"
+                    aria-label="Sign In"
                   >
-                    <FiUser />
-                    Sign In
+                    <FiUser className="w-4 h-4" />
+                    <span className="hidden lg:inline">Sign In</span>
                   </Link>
                 </>
               ) : (
                 <>
                   <DropdownMenu>
-                    <DropdownMenuTrigger className="hidden lg:flex items-center gap-1.5 text-gray-600 hover:text-green-600 transition-colors cursor-pointer">
-                      <div className="flex items-center justify-center  w-10 h-10 rounded-full hover:bg-gray-100 transition-colors group border-0">
+                    {/* Visible on all screen sizes */}
+                    <DropdownMenuTrigger className="flex items-center gap-1.5 text-gray-600 hover:text-green-600 transition-colors cursor-pointer">
+                      <div className="flex items-center justify-center w-9 h-9 lg:w-10 lg:h-10 rounded-full hover:bg-gray-100 transition-colors group border-0">
                         <FaRegUserCircle className="text-xl text-gray-500 group-hover:text-green-600 transition-colors" />
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent align="end" className="w-64 bg-white">
                       <DropdownMenuGroup>
                         <DropdownMenuLabel className="flex items-center gap-3 p-4 border-b mb-1 border-gray-100">
-                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                             <FaRegUserCircle className="text-xl text-green-600" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-sm font-semibold text-gray-800 truncate">
                               {myData?.user?.name}
                             </p>
-                            <p className="font-semibold text-gray-500 truncate">
+                            <p className="text-xs font-medium text-gray-500 truncate">
                               {myData?.user?.email}
                             </p>
                           </div>
@@ -213,7 +216,7 @@ export const Navbar: React.FC = () => {
                         <DropdownMenuItem>
                           <Link
                             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
-                            href="/profile/addresses"
+                            href="/profile"
                           >
                             <FiUser className="w-4 text-gray-400" />
                             My Profile

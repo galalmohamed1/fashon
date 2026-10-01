@@ -57,7 +57,7 @@ export const CartDrawer: React.FC = () => {
 
   const handleProceedToCheckout = () => {
     setIsCartOpen(false);
-    setActivePage('checkout');
+    // setActivePage('checkout');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -338,12 +338,13 @@ export const CartDrawer: React.FC = () => {
                 </div>
 
                 {/* Checkout CTA */}
-                <button
+                <Link
+                  href="/checkout"
                   onClick={handleProceedToCheckout}
                   className="w-full py-4 rounded-xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-[0.2em] font-bold flex items-center justify-center gap-2 transition-all shadow-xl cursor-pointer"
                 >
                   PROCEED TO CHECKOUT <ArrowRight className="w-4 h-4" />
-                </button>
+                </Link>
 
                 <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-zinc-500 font-medium">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />

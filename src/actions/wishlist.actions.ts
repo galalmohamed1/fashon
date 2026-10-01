@@ -53,10 +53,16 @@ export async function getLoggedUserWishlist() {
 }
 export async function RemoveFromWishlist(productId: string) {
   const token = await getAccessToken();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/wishlist/${productId}`, {
-    method: 'DELETE',
-    headers: { token: token as string, 'content-type': 'application/json' },
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/wishlist/${productId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+    },
+  );
   const data = await res.json();
   return data;
 }

@@ -19,37 +19,31 @@ export async function AddToCart(productId: string) {
   const data: ApiSingleResponse<Cart> = await res.json();
   return data.data;
 }
-export async function getLoggedUserCart() {
-  const token = await getAccessToken();
+export async function getLoggedUserCart(): Promise<
+  ApiSingleResponse<Cart> | undefined
+> {
+  try {
+    const token = await getAccessToken();
 
-  if (!token) {
-    return {
-      status: "unauthenticated" as string,
-      numOfCartItems: 0,
-      data: {
-        products: [] as CartItem[],
-        totalCartPrice: 0,
+    if (!token) {
+      return undefined;
+    }
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/`, {
+      method: "GET",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
-    };
-  }
+      cache: "no-store",
+    });
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/`, {
-    method: "GET",
-    headers: {
-      "content-type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    cache: "no-store",
-  });
-  const data: ApiSingleResponse<Cart> = await res.json();
-  return {
-    status: data.success ? "success" : "error",
-    numOfCartItems: data.data?.items?.length ?? 0,
-    data: {
-      products: data.data?.items ?? [],
-      totalCartPrice: data.data?.totalPrice ?? 0,
-    },
-  };
+    const data: ApiSingleResponse<Cart> = await res.json();
+    return data;
+  } catch (error) {
+    console.error("[getLoggedUserCart]", error);
+    return undefined;
+  }
 }
 
 export async function RemoveProduct(productId: string) {
@@ -71,21 +65,41 @@ export async function RemoveAllProductsFromCart() {
   const token = await getAccessToken();
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/cart`, {
     method: "DELETE",
-    headers: { token: token as string, "content-type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "content-type": "application/json",
+    },
   });
   const data = await res.json();
   return data;
 }
-export async function UpdateProductQuantity(productId: string, quantity: number) {
+export async function UpdateProductQuantity(
+  cartId: string,
+  productId: string,
+  quantity: number,
+) {
   const token = await getAccessToken();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/${productId}`,
-    {
-      method: "PUT",
-      headers: { token: token as string, "content-type": "application/json" },
-      body: JSON.stringify({ quantity: quantity }),
-    },
-  );
-  const data = await res.json();
-  return data;
+
+  if (!token) {
+    return { success: false, message: "Please login to update your cart" };
+  }
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/${cartId}`, 
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ productId, quantity }), 
+      },
+    );
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("[UpdateProductQuantity]", error);
+    return { success: false, message: "Failed to update quantity" };
+  }
 }

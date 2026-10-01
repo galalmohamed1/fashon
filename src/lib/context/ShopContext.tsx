@@ -57,6 +57,7 @@ interface ShopContextType {
 
   // Cart
   cart: CartItem[];
+  cartId: string | null; 
   addToCart: (
     product: Product,
     color: ProductColor,
@@ -145,6 +146,8 @@ export default function ShopProvider({
 
   // Cart
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartId, setCartId] = useState<string | null>(null);
+  
 
   // Wishlist
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -233,22 +236,22 @@ const refreshWishlist = useCallback(async () => {
   // =========================
 
   const refreshCart = useCallback(async () => {
-    try {
-      const response = await getLoggedUserCart();
+  try {
+    const response = await getLoggedUserCart();
 
-      if (
-        response?.status === "success" &&
-        Array.isArray(response.data?.products)
-      ) {
-        setCart(response.data.products);
-      } else {
-        setCart([]);
-      }
-    } catch (error) {
-      console.error("Failed to fetch cart:", error);
+    if (response?.success && response.data) {
+      setCart(response.data.items ?? []);
+      setCartId(response.data._id ?? null);
+    } else {
       setCart([]);
+      setCartId(null);
     }
-  }, []);
+  } catch (error) {
+    console.error("Failed to fetch cart:", error);
+    setCart([]);
+    setCartId(null);
+  }
+}, []);
   
 
   // =========================
@@ -406,39 +409,39 @@ const refreshWishlist = useCallback(async () => {
 
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
-  const updateQuantity = async (itemId: string, delta: number) => {
-    // Find the current item to calculate new quantity
-    const currentItem = cart.find(
-      (item) => item.product._id === itemId || item._id === itemId
-    );
-    if (!currentItem) return;
+const updateQuantity = async (itemId: string, delta: number) => {
+  if (!cartId) return; // مفيش سلة أصلاً، منعملش حاجة
 
-    const newQty = (currentItem.quantity ?? 1) + delta;
-    if (newQty < 1) return; // prevent going below 1
+  // Find the current item to calculate new quantity
+  const currentItem = cart.find(
+    (item) => item.product._id === itemId || item._id === itemId
+  );
+  if (!currentItem) return;
 
-    setUpdatingItemId(itemId);
-    try {
-      const response = await UpdateProductQuantity(itemId, newQty);
-      if (!response?.success) {
-        addToast({
-          title: "Could not update item",
-          message: response?.message ?? "Please try again.",
-          type: "warning",
-        });
-        return;
-      }
+  const newQty = (currentItem.quantity ?? 1) + delta;
+  if (newQty < 1) return; // prevent going below 1
 
-      await refreshCart();
-    } catch (error) {
-      console.error("Failed to update cart:", error);
+  setUpdatingItemId(itemId);
+  try {
+    const response = await UpdateProductQuantity(cartId, itemId, newQty);
+
+    if (!response?.success) {
       addToast({
-        title: "Error updating quantity",
+        title: "Could not update item",
+        message: response?.message ?? "Please try again.",
         type: "warning",
       });
-    } finally {
-      setUpdatingItemId(null);
+      return;
     }
-  };
+
+    await refreshCart();
+  } catch (error) {
+    console.error("Failed to update cart:", error);
+    addToast({ title: "Error updating quantity", type: "warning" });
+  } finally {
+    setUpdatingItemId(null);
+  }
+};
 
   // =========================
   // Clear Cart
@@ -604,6 +607,7 @@ const refreshWishlist = useCallback(async () => {
 
         // Cart
         cart,
+        cartId,
         addToCart,
         removeFromCart,
         updateQuantity,
