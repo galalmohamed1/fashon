@@ -34,8 +34,9 @@ export default function CartContextProvider({
     try {
       const res = await getLoggedUserCart();
 
-      if (res?.status === "success" && Array.isArray(res.data?.products)) {
-        const totalItems = res.data.products.reduce(
+      const resAny = res as any;
+      if (resAny?.status === "success" && Array.isArray(resAny.data?.products)) {
+        const totalItems = resAny.data.products.reduce(
           (
             total: number,
             product: {
