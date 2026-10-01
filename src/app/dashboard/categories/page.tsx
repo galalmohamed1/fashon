@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function AdminCategoriesPage() {
-  const categories = await getCategoriesAdmin();
+  const categories = (await getCategoriesAdmin()) ?? [];
 
   return <CategoriesClient initialCategories={categories} />;
 }

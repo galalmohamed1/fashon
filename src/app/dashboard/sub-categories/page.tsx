@@ -15,8 +15,8 @@ export default async function AdminSubCategoriesPage() {
 
   return (
     <SubCategoriesClient
-      initialSubCategories={subCategories}
-      categories={categories}
+      initialSubCategories={subCategories ?? []}
+      categories={categories ?? []}
     />
   );
 }

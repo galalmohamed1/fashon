@@ -8,8 +8,7 @@ export const metadata = {
 };
 
 export default async function AdminCouponsPage() {
-  const res = await getCouponsAdmin();
-  const coupons = res.data ?? [];
+  const coupons = (await getCouponsAdmin()) ?? [];
 
   return <CouponsClient initialCoupons={coupons} />;
 }

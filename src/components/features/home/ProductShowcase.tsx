@@ -3,6 +3,7 @@ import React, { useRef } from 'react';
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
 import { ProductCard } from '../../shared/ProductCard';
+import Link from 'next/link';
 
 export const ProductShowcase: React.FC = () => {
   const { setActivePage, products } = useShop();
@@ -78,15 +79,15 @@ export const ProductShowcase: React.FC = () => {
           <span className="tracking-widest uppercase font-semibold">
             EXPLORE ARCHIVAL PIECES
           </span>
-          <button
+          <Link
             onClick={() => {
-              setActivePage('shop');
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
+            href="/shop"
             className="text-zinc-900 hover:text-red-600 font-bold tracking-widest uppercase flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             VIEW FULL SHOP CATALOG <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          </Link>
         </div>
 
       </div>

@@ -178,7 +178,9 @@ export async function getSubCategoriesAdmin(): Promise<SubCategory[] | undefined
 }
 
 /** POST /api/categories — create a new category (name + optional image) */
-export async function createCategory(formData: FormData): Promise<Category | undefined> {
+export async function createCategory(
+  formData: FormData
+): Promise<{ success: boolean; data?: Category; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/categories`, {
@@ -186,15 +188,31 @@ export async function createCategory(formData: FormData): Promise<Category | und
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const data: ApiSingleResponse<Category> = await res.json();
-    return data.data;
-  } catch {
-    return undefined;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to create category',
+      };
+    }
+    return {
+      success: true,
+      data: data?.data || data,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
 /** PUT /api/categories/:id — update category */
-export async function updateCategory(id: string, formData: FormData): Promise<Category | undefined> {
+export async function updateCategory(
+  id: string,
+  formData: FormData
+): Promise<{ success: boolean; data?: Category; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/categories/${id}`, {
@@ -202,24 +220,52 @@ export async function updateCategory(id: string, formData: FormData): Promise<Ca
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
-    const data: ApiSingleResponse<Category> = await res.json();
-    return data.data;
-  } catch {
-    return undefined;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to update category',
+      };
+    }
+    return {
+      success: true,
+      data: data?.data || data,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
 /** DELETE /api/categories/:id */
-export async function deleteCategory(id: string): Promise<boolean> {
+export async function deleteCategory(
+  id: string
+): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/categories/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.ok;
-  } catch {
-    return false;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to delete category',
+      };
+    }
+    return {
+      success: true,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
@@ -231,7 +277,7 @@ export async function deleteCategory(id: string): Promise<boolean> {
 export async function createSubCategory(body: {
   name: string;
   category?: string;
-}): Promise<SubCategory | undefined> {
+}): Promise<{ success: boolean; data?: SubCategory; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/sub-categories`, {
@@ -242,10 +288,23 @@ export async function createSubCategory(body: {
       },
       body: JSON.stringify(body),
     });
-    const data: ApiSingleResponse<SubCategory> = await res.json();
-    return data.data;
-  } catch {
-    return undefined;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to create sub-category',
+      };
+    }
+    return {
+      success: true,
+      data: data?.data || data,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
@@ -253,7 +312,7 @@ export async function createSubCategory(body: {
 export async function updateSubCategory(
   id: string,
   body: { name?: string; category?: string }
-): Promise<SubCategory | undefined> {
+): Promise<{ success: boolean; data?: SubCategory; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/sub-categories/${id}`, {
@@ -264,24 +323,52 @@ export async function updateSubCategory(
       },
       body: JSON.stringify(body),
     });
-    const data: ApiSingleResponse<SubCategory> = await res.json();
-    return data.data;
-  } catch {
-    return undefined;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to update sub-category',
+      };
+    }
+    return {
+      success: true,
+      data: data?.data || data,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
 /** DELETE /api/sub-categories/:id */
-export async function deleteSubCategory(id: string): Promise<boolean> {
+export async function deleteSubCategory(
+  id: string
+): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/sub-categories/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.ok;
-  } catch {
-    return false;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to delete sub-category',
+      };
+    }
+    return {
+      success: true,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
@@ -326,7 +413,7 @@ export async function getAllOrdersAdmin(): Promise<AdminOrder[] | undefined> {
 export async function updateOrderStatus(
   orderId: string,
   status: AdminOrder['status']
-): Promise<boolean> {
+): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/orders/${orderId}`, {
@@ -337,9 +424,22 @@ export async function updateOrderStatus(
       },
       body: JSON.stringify({ status }),
     });
-    return res.ok;
-  } catch {
-    return false;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to update order status',
+      };
+    }
+    return {
+      success: true,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
@@ -430,7 +530,7 @@ export async function createCoupon(body: {
   discountType: 'percentage' | 'fixed';
   expiresAt?: string;
   usageLimit?: number;
-}): Promise<Coupon | undefined> {
+}): Promise<{ success: boolean; data?: Coupon; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/coupons`, {
@@ -441,10 +541,23 @@ export async function createCoupon(body: {
       },
       body: JSON.stringify(body),
     });
-    const data: ApiSingleResponse<Coupon> = await res.json();
-    return data.data;
-  } catch {
-    return undefined;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to create coupon',
+      };
+    }
+    return {
+      success: true,
+      data: data?.data || data,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
@@ -459,7 +572,7 @@ export async function updateCoupon(
     isActive: boolean;
     usageLimit: number;
   }>
-): Promise<Coupon | undefined> {
+): Promise<{ success: boolean; data?: Coupon; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/coupons/${id}`, {
@@ -470,23 +583,51 @@ export async function updateCoupon(
       },
       body: JSON.stringify(body),
     });
-    const data: ApiSingleResponse<Coupon> = await res.json();
-    return data.data;
-  } catch {
-    return undefined;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to update coupon',
+      };
+    }
+    return {
+      success: true,
+      data: data?.data || data,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }
 
 /** DELETE /api/coupons/:id */
-export async function deleteCoupon(id: string): Promise<boolean> {
+export async function deleteCoupon(
+  id: string
+): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/coupons/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.ok;
-  } catch {
-    return false;
+    const data = await res.json().catch(() => null);
+    if (!res.ok) {
+      return {
+        success: false,
+        message: data?.message || 'Failed to delete coupon',
+      };
+    }
+    return {
+      success: true,
+      message: data?.message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: (err as Error).message || 'An unexpected error occurred',
+    };
   }
 }

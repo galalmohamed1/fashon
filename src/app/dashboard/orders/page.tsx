@@ -4,8 +4,7 @@ import { OrdersTable } from './OrdersTable';
 export const dynamic = 'force-dynamic';
 
 export default async function AdminOrdersPage() {
-  const res = await getAllOrdersAdmin();
-  const orders = res.success ? res.data : [];
+  const orders = (await getAllOrdersAdmin()) ?? [];
 
   return <OrdersTable initialOrders={orders} />;
 }
