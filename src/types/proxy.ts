@@ -3,11 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function proxy(requset: NextRequest) {
   const protectedRoutes = [
-    '/profile/addresses',
-    '/profile/settinges',
-    '/profile/orders',
+    '/profile/address',
+    '/profile/settings',
     '/checkout',
-    '/allorders',
     '/cart',
     '/wishlist',
   ];
@@ -22,7 +20,6 @@ export async function proxy(requset: NextRequest) {
   const myToken = await getToken({
     req: requset,
     secret: process.env.NEXTAUTH_SECRET ,
-    secureCookie: process.env.NODE_ENV === 'production',
   });
   const token = myToken?.routeToken;
   if (!token && protectedRoutes.some((path) => myPath.startsWith(path))) {
@@ -35,11 +32,9 @@ export async function proxy(requset: NextRequest) {
 }
 export const config = {
     matcher: [
-    '/profile/addresses/:path*',
-    '/profile/settinges/:path*',
-    '/profile/orders/:path*',
+    '/profile/address/:path*',
+    '/profile/settings/:path*',
     '/checkout/:path*',
-    '/allorders/:path*',
     '/cart',
     '/wishlist',
     '/login',
