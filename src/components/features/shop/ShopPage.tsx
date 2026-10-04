@@ -1,11 +1,17 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Filter, SlidersHorizontal, ArrowUpDown, X, Search, RotateCcw, Grid3X3, Grid2X2 } from 'lucide-react';
 
 import { useShop } from '../../../lib/context/ShopContext';
-import { SortOption } from '../../../types';
+import { Product, SortOption } from '../../../types';
 import { ProductCard } from '../../shared/ProductCard';
+import { getAllProdects } from '@/app/api/services/prodect.services';
+type SubCategory = {
+  id: string;
+  label: string;
+};
+const ALL: SubCategory = { id: 'all', label: 'ALL ARCHIVE' };
 
 export const ShopPage: React.FC = () => {
   const { products, filters, setFilters, resetFilters, setSelectedCategory } = useShop();
@@ -14,14 +20,41 @@ export const ShopPage: React.FC = () => {
   const [gridCols, setGridCols] = useState<3 | 4>(3);
   const [visibleCount, setVisibleCount] = useState(12);
 
-  const categories = [
-    { id: 'all', label: 'ALL ARCHIVE' },
-    { id: 't-shirts', label: 'T-SHIRTS' },
-    { id: 'hoodies', label: 'HOODIES' },
-    { id: 'jackets', label: 'JACKETS' },
-    { id: 'pants', label: 'PANTS' },
-    { id: 'pajamas', label: 'Pajamas' }
-  ];
+  const [subCategory, setSubCategory] = useState<SubCategory[]>([ALL]);
+  
+
+  useEffect(() => {
+    async function getSubCategories() {
+      try {
+        const products = await getAllProdects()
+        if (!products) return;
+         products.forEach((p: Product) => {
+
+          const found: SubCategory[] = [];
+
+          products.forEach((p: Product) => {
+            if (!p.subCategory) return;
+
+            const id = p.subCategory.slug.toLowerCase();
+            const label = p.subCategory.name.toUpperCase();
+
+            const exists = found.find((c) => c.id === id);
+            if (!exists) {
+              found.push({ id, label });
+            }
+          });
+        
+
+          setSubCategory([ALL, ...found]);
+
+        })
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    getSubCategories();
+  },[]);
+  
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE SIZE'];
   const availableColors = [
@@ -156,7 +189,7 @@ export const ShopPage: React.FC = () => {
 
         {/* Category Pills Slider */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none mb-8 border-b border-zinc-200">
-          {categories.map((cat) => {
+          {subCategory.map((cat) => {
             const isSelected = (filters.category as any) === cat.id;
             return (
               <button

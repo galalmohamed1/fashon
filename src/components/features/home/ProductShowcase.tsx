@@ -67,7 +67,7 @@ export const ProductShowcase: React.FC = () => {
           {showcaseProducts.map((product) => (
             <div
               key={product._id}
-              className="w-[280px] sm:w-[320px] md:w-[340px] flex-shrink-0 snap-start"
+              className="w-70 sm:w-[320px] md:w-85 shrink-0 snap-start"
             >
               <ProductCard product={product} />
             </div>

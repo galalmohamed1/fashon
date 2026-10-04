@@ -10,7 +10,7 @@ export const FeaturedCollection: React.FC = () => {
   const { setActivePage, setSelectedCategory, products } = useShop();
   const router = useRouter();
   // Get key featured pieces from real API
-  const featured = products.filter((p) => p.isFeatured).slice(0, 4);
+  const featured = products.filter((p) => p.isFeatured).slice(0, 2);
   const featuredPieces = featured.length > 0 ? featured : products.slice(0, 4);
 
   const handleExploreCollection = (category?: string) => {
@@ -22,7 +22,7 @@ export const FeaturedCollection: React.FC = () => {
   return (
     <section id="featured-collection" className="relative py-24 sm:py-32 overflow-hidden bg-white">
       {/* Background Decorative Ambient */}
-      <div className="absolute top-1/2 -left-48 w-96 h-96 bg-red-600/[0.02] rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 -left-48 w-96 h-96 bg-red-600/2 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
@@ -54,7 +54,7 @@ export const FeaturedCollection: React.FC = () => {
             whileInView={{ opacity: 1, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%)' }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:col-span-5 relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-auto lg:h-full min-h-[480px] rounded-2xl overflow-hidden group border border-zinc-200 shadow-sm"
+            className="lg:col-span-5 relative aspect-3/4 sm:aspect-4/5 lg:aspect-auto lg:h-full min-h-120 rounded-2xl overflow-hidden group border border-zinc-200 shadow-sm"
           >
             <img
               src="https://images.unsplash.com/photo-1509967419530-da38b4704bc6?q=80&w=1200&auto=format&fit=crop"
@@ -64,7 +64,7 @@ export const FeaturedCollection: React.FC = () => {
             />
             
             {/* Dark Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/30 to-transparent" />
 
             {/* Editorial Content Overlay */}
             <div className="absolute inset-0 p-6 sm:p-8 flex flex-col justify-between">
@@ -88,7 +88,7 @@ export const FeaturedCollection: React.FC = () => {
                   480 GSM French Terry and Gore-Dyneema membrane construction.
                 </p>
                 <button
-                  onClick={() => handleExploreCollection('hoodies')}
+                  onClick={() => handleExploreCollection()}
                   className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-white uppercase hover:text-red-400 transition-colors cursor-pointer"
                 >
                   DISCOVER HOODIES <ArrowRight className="w-3.5 h-3.5" />

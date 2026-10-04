@@ -257,7 +257,7 @@ export const CheckoutPage: React.FC = () => {
                         value={formData.phone}
                         onChange={handleInputChange}
                         placeholder="+1 (555) 000-0000"
-                        className="w-full px-4 py-3 rounded-xl bg-white border border-zinc-300 text-xs font-mono text-black focus:outline-none focus:border-black"
+                        className="w-full px-4 py-3 rounded-xl bg-white border text-xs font-mono text-black focus:outline-none focus:border-black"
                       />
                     </div>
                     <div>
@@ -268,7 +268,7 @@ export const CheckoutPage: React.FC = () => {
                         name="country"
                         value={formData.country}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl bg-white border border-zinc-300 text-xs font-mono text-black focus:outline-none focus:border-black uppercase font-medium"
+                        className="w-full px-4 py-3 rounded-xl bg-white border text-xs font-mono text-black focus:outline-none focus:border-black uppercase font-medium"
                       >
                         <option value="United States">United States (USD)</option>
                         <option value="Egypt">Egypt (EG)</option>
@@ -424,7 +424,7 @@ export const CheckoutPage: React.FC = () => {
                         value={formData.state}
                         onChange={handleInputChange}
                         placeholder="NY"
-                        className="w-full px-4 py-3 rounded-xl bg-white border border-zinc-300 text-xs font-mono text-black focus:outline-none focus:border-black"
+                        className="w-full px-4 py-3 rounded-xl bg-white border  text-xs font-mono text-black focus:outline-none focus:border-black"
                       />
                     </div>
                     <div>
@@ -666,7 +666,7 @@ export const CheckoutPage: React.FC = () => {
             <div className="space-y-4 max-h-72 overflow-y-auto pr-2 pb-4 mb-6 border-b border-zinc-200">
               {cart.map((item: any, index: number) => (
                 <div key={item._id || item.id || index} className="flex items-center gap-3.5">
-                  <div className="w-14 h-18 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200">
+                  <div className="w-14 h-18 rounded-lg overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200">
                     <img
                       src={item.product.images?.[0]?.secure_url || ''}
                       alt={item.product.name}
@@ -712,7 +712,7 @@ export const CheckoutPage: React.FC = () => {
             </div>
 
             <div className="mt-6 p-3 rounded-xl bg-white border border-zinc-200 flex items-center gap-2 text-[11px] font-mono text-zinc-600 shadow-xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Complimentary insured air dispatch with signature verification.</span>
             </div>
           </div>

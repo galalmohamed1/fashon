@@ -245,7 +245,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. OVERSIZED CYBER HOODIE"
-              className="w-full px-4 py-2.5 text-sm bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black font-sans transition-colors"
+              className="w-full px-4 py-2.5 text-sm bg-white border border-zinc-200 rounded focus:outline-hidden font-sans transition-colors"
             />
           </div>
 
@@ -272,7 +272,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Detailed description of the product silhouette, fabric, and fit..."
-              className="w-full px-4 py-2.5 text-sm bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black font-sans transition-colors"
+              className="w-full px-4 py-2.5 text-sm bg-white border border-zinc-200 rounded focus:outline-hidden font-sans transition-colors"
             />
           </div>
         </div>
@@ -296,7 +296,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="120"
-                className="w-full px-4 py-2.5 text-sm font-mono bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black transition-colors"
+                className="w-full px-4 py-2.5 text-sm font-mono bg-white border border-zinc-200 rounded focus:outline-hidden transition-colors"
               />
             </div>
 
@@ -311,7 +311,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={discountPrice}
                 onChange={(e) => setDiscountPrice(e.target.value)}
                 placeholder="95 (Optional)"
-                className="w-full px-4 py-2.5 text-sm font-mono bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black transition-colors"
+                className="w-full px-4 py-2.5 text-sm font-mono bg-white border border-zinc-200 rounded focus:outline-hidden transition-colors"
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 value={category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 text-xs font-mono uppercase bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black transition-colors"
+                className="w-full px-4 py-2.5 text-xs font-mono uppercase bg-white border border-zinc-200 rounded focus:outline-hidden transition-colors"
               >
                 <option value="">SELECT CATEGORY</option>
                 {categories.map((c) => (
@@ -349,7 +349,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 onChange={(e) => setSubCategory(e.target.value)}
                 required
                 disabled={!category}
-                className="w-full px-4 py-2.5 text-xs font-mono uppercase bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black transition-colors disabled:bg-zinc-100 disabled:text-zinc-400 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2.5 text-xs font-mono uppercase bg-white border border-zinc-200 rounded focus:outline-hidden transition-colors disabled:text-zinc-400 disabled:cursor-not-allowed"
               >
                 <option value="">
                   {!category
@@ -382,7 +382,7 @@ const handleSubmit = async (e: React.FormEvent) => {
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               placeholder="e.g. SAVE20 (Optional)"
-              className="w-full px-4 py-2.5 text-sm font-mono tracking-widest uppercase bg-white border border-zinc-200 rounded focus:outline-hidden focus:border-black transition-colors"
+              className="w-full px-4 py-2.5 text-sm font-mono tracking-widest uppercase bg-white border rounded focus:outline-hidden transition-colors"
             />
             <p className="font-mono text-[10px] text-zinc-400 tracking-wider">
               Leave blank if no coupon applies to this product. Manage coupons under{' '}

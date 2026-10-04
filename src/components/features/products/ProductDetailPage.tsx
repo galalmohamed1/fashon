@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useParams } from 'next/navigation';
+
 import {
   Heart,
   ShoppingBag,
@@ -163,7 +164,7 @@ export const ProductDetailPage: React.FC = () => {
           <span>/</span>
           <span className="text-zinc-500">{product.subCategory?.name || 'ARCHIVE'}</span>
           <span>/</span>
-          <span className="text-black font-bold truncate max-w-[200px]">{product.name}</span>
+          <span className="text-black font-bold truncate max-w-50">{product.name}</span>
         </div>
 
         {/* Main Product Layout */}
@@ -331,7 +332,7 @@ export const ProductDetailPage: React.FC = () => {
             </div>
 
             {/* Short Editorial Description */}
-            <p className="text-zinc-600 text-sm font-normal leading-relaxed mb-8">
+            <p className="text-zinc-600 text-sm font-normal leading-relaxed mb-8 whitespace-pre-line wrap-break-word">
               {product.description}
             </p>
 
@@ -644,15 +645,16 @@ export const ProductDetailPage: React.FC = () => {
               <h3 className="font-display font-black text-2xl sm:text-3xl text-black uppercase">
                 COMPLETE THE LOOK
               </h3>
-              <button
+              <Link
+              href='/shop'
                 onClick={() => {
-                  setActivePage('shop');
+                  // setActivePage('shop');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 className="font-mono text-xs text-zinc-600 hover:text-black uppercase tracking-wider font-bold cursor-pointer"
               >
                 EXPLORE ALL PIECES →
-              </button>
+              </Link>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {relatedProducts.map((p) => (
@@ -662,24 +664,6 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         )}
 
-      </div>
-
-      {/* Sticky Mobile Purchase Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-4 bg-white/95 backdrop-blur-xl border-t border-zinc-200 shadow-2xl flex items-center justify-between gap-4">
-        <div>
-          <p className="font-sans font-bold text-xs text-black truncate max-w-[140px]">
-            {product.name}
-          </p>
-          <p className="font-mono text-xs font-bold text-zinc-800">
-            ${currentPrice} • {selectedSize}
-          </p>
-        </div>
-        <button
-          onClick={handleAddToCart}
-          className="flex-1 py-3 px-4 rounded-xl bg-black text-white font-mono text-xs uppercase font-bold tracking-wider flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <ShoppingBag className="w-4 h-4" /> ADD TO BAG
-        </button>
       </div>
     </div>
   );
