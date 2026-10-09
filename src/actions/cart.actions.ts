@@ -61,18 +61,7 @@ export async function RemoveProduct(productId: string) {
   const data = await res.json();
   return data;
 }
-export async function RemoveAllProductsFromCart() {
-  const token = await getAccessToken();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/cart`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "content-type": "application/json",
-    },
-  });
-  const data = await res.json();
-  return data;
-}
+
 export async function UpdateProductQuantity(
   cartId: string,
   productId: string,

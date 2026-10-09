@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import { validateCoupon } from '@/actions/admin.actions';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ShoppingBag, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Tag, Sparkles, AlertTriangle } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
@@ -13,45 +14,60 @@ export const CartDrawer: React.FC = () => {
     removeFromCart,
     updateQuantity,
     updatingItemId,
-    clearCart,
-    isClearingCart,
+    // clearCart,
+    // isClearingCart,
     cartSubtotal,
     cartCount,
     setActivePage,
-    addToast
+    addToast,
+    appliedCouponCode,
+    discountAmount,
+    discountFixed,
+    discountPercent,
+    setAppliedCoupon,
+    clearCoupon,
   } = useShop();
 
   const [promoCode, setPromoCode] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
-  const [appliedCode, setAppliedCode] = useState('');
   const [confirmClear, setConfirmClear] = useState(false);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
   const freeShippingThreshold = 150;
   const progressPercent = Math.min(100, (cartSubtotal / freeShippingThreshold) * 100);
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
 
-  const discountAmount = (cartSubtotal * discountPercent) / 100;
   const finalTotal = Math.max(0, cartSubtotal - discountAmount);
 
-  const handleApplyPromo = (e: React.FormEvent) => {
+  const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!promoCode.trim()) return;
+    if (!promoCode.trim() || isApplyingPromo) return;
 
-    const code = promoCode.trim().toUpperCase();
-    if (code === 'GM10' || code === 'VIP2026' || code === 'THREADX10') {
-      setDiscountPercent(10);
-      setAppliedCode(code);
-      setPromoCode('');
-      addToast({
-        title: 'PROMO CODE APPLIED: 10% OFF',
-        type: 'success'
-      });
-    } else {
-      addToast({
-        title: 'INVALID PROMO CODE',
-        message: 'Try code "GM10"',
-        type: 'warning'
-      });
+    setIsApplyingPromo(true);
+    try {
+      const result = await validateCoupon(promoCode, cartSubtotal);
+      if (result.valid) {
+        if (result.discountType === 'fixed') {
+          setAppliedCoupon(result.code, result.discount, 0);
+          addToast({
+            title: `PROMO CODE APPLIED: $${result.discount} OFF`,
+            type: 'success',
+          });
+        } else {
+          setAppliedCoupon(result.code, 0, result.discount);
+          addToast({
+            title: `PROMO CODE APPLIED: ${result.discount}% OFF`,
+            type: 'success',
+          });
+        }
+        setPromoCode('');
+      } else {
+        addToast({
+          title: 'INVALID PROMO CODE',
+          type: 'warning',
+        });
+      }
+    } finally {
+      setIsApplyingPromo(false);
     }
   };
 
@@ -92,7 +108,7 @@ export const CartDrawer: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 {/* Clear All Button — only shown when cart has items */}
-                {cart.length > 0 && (
+                {/* {cart.length > 0 && (
                   confirmClear ? (
                     <div className="flex items-center gap-1.5 bg-red-50 border border-red-200 rounded-lg px-2 py-1">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0" />
@@ -124,7 +140,7 @@ export const CartDrawer: React.FC = () => {
                       CLEAR ALL
                     </button>
                   )
-                )}
+                )} */}
                 <button
                   onClick={() => { setIsCartOpen(false); setConfirmClear(false); }}
                   className="p-2 rounded-full text-zinc-500 hover:text-black hover:bg-zinc-100 transition-colors cursor-pointer"
@@ -302,9 +318,12 @@ export const CartDrawer: React.FC = () => {
                   </div>
                   <button
                     type="submit"
-                    className="px-3 py-2 rounded-lg bg-black hover:bg-zinc-800 font-mono text-xs uppercase font-bold text-white transition-colors cursor-pointer"
+                    disabled={isApplyingPromo}
+                    className="px-3 py-2 rounded-lg bg-black hover:bg-zinc-800 font-mono text-xs uppercase font-bold text-white transition-colors cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
                   >
-                    APPLY
+                    {isApplyingPromo ? (
+                      <span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin block" />
+                    ) : 'APPLY'}
                   </button>
                 </form>
 
@@ -315,9 +334,16 @@ export const CartDrawer: React.FC = () => {
                     <span className="text-black font-bold">${cartSubtotal.toFixed(2)}</span>
                   </div>
 
-                  {discountPercent > 0 && (
-                    <div className="flex justify-between text-emerald-700 font-bold">
-                      <span>PROMO ({appliedCode})</span>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-emerald-700 font-bold">
+                      <span className="flex items-center gap-1.5">
+                        PROMO ({appliedCouponCode})
+                        <button
+                          onClick={clearCoupon}
+                          title="Remove coupon"
+                          className="text-emerald-600 hover:text-red-500 transition-colors cursor-pointer"
+                        >✕</button>
+                      </span>
                       <span>-${discountAmount.toFixed(2)}</span>
                     </div>
                   )}

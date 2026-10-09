@@ -1,10 +1,12 @@
-'use server';
+"use server";
 
-import { getAccessToken } from '@/types/utilities';
-import { ApiListResponse, ApiSingleResponse, Product } from '@/types';
-import { Category, SubCategory, Coupon } from '@/types/category';
+import { getAccessToken } from "@/types/utilities";
+import { ApiListResponse, ApiSingleResponse, Product } from "@/types";
+import { Category, SubCategory, Coupon } from "@/types/category";
+import { AdminCustomer } from "@/types/admin/adminCustomer";
+import { AdminOrder } from "@/types/admin/adminOrders";
 
-const BASE = 'https://backend-lamsa.vercel.app/api';
+const BASE = "https://backend-lamsa.vercel.app/api";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // PRODUCTS
@@ -16,7 +18,7 @@ export async function getAllProductsAdmin(): Promise<Product[] | undefined> {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/products`, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      cache: "no-store",
     });
     const data: ApiListResponse<Product> = await res.json();
     return data.data;
@@ -26,12 +28,14 @@ export async function getAllProductsAdmin(): Promise<Product[] | undefined> {
 }
 
 /** GET /api/products/:id */
-export async function getProductByIdAdmin(id: string): Promise<Product | undefined> {
+export async function getProductByIdAdmin(
+  id: string,
+): Promise<Product | undefined> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/products/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      cache: "no-store",
     });
     const data: ApiSingleResponse<Product> = await res.json();
     return data.data;
@@ -73,7 +77,7 @@ export async function createProduct(
       console.error("CREATE PRODUCT ERROR:", responseText);
       return {
         success: false,
-        message: parsed?.message || 'Failed to create product',
+        message: parsed?.message || "Failed to create product",
       };
     }
 
@@ -86,7 +90,7 @@ export async function createProduct(
     console.error("[createProduct] ERROR:", err);
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -94,12 +98,12 @@ export async function createProduct(
 /** PUT /api/products/:id — update existing product */
 export async function updateProduct(
   id: string,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ success: boolean; data?: Product; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/products/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
@@ -116,10 +120,10 @@ export async function updateProduct(
     }
 
     if (!res.ok) {
-      console.error('[updateProduct] Error:', responseText);
+      console.error("[updateProduct] Error:", responseText);
       return {
         success: false,
-        message: parsed?.message || 'Failed to update product',
+        message: parsed?.message || "Failed to update product",
       };
     }
 
@@ -129,10 +133,10 @@ export async function updateProduct(
       message: parsed?.message,
     };
   } catch (err) {
-    console.error('[updateProduct] Error:', err);
+    console.error("[updateProduct] Error:", err);
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -142,7 +146,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/products/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.ok;
@@ -158,7 +162,7 @@ export async function deleteProduct(id: string): Promise<boolean> {
 /** GET /api/categories */
 export async function getCategoriesAdmin(): Promise<Category[] | undefined> {
   try {
-    const res = await fetch(`${BASE}/categories`, { cache: 'no-store' });
+    const res = await fetch(`${BASE}/categories`, { cache: "no-store" });
     const data: ApiListResponse<Category> = await res.json();
     return data.data;
   } catch {
@@ -167,9 +171,11 @@ export async function getCategoriesAdmin(): Promise<Category[] | undefined> {
 }
 
 /** GET /api/sub-categories */
-export async function getSubCategoriesAdmin(): Promise<SubCategory[] | undefined> {
+export async function getSubCategoriesAdmin(): Promise<
+  SubCategory[] | undefined
+> {
   try {
-    const res = await fetch(`${BASE}/sub-categories`, { cache: 'no-store' });
+    const res = await fetch(`${BASE}/sub-categories`, { cache: "no-store" });
     const data: ApiListResponse<SubCategory> = await res.json();
     return data.data;
   } catch {
@@ -179,12 +185,12 @@ export async function getSubCategoriesAdmin(): Promise<SubCategory[] | undefined
 
 /** POST /api/categories — create a new category (name + optional image) */
 export async function createCategory(
-  formData: FormData
+  formData: FormData,
 ): Promise<{ success: boolean; data?: Category; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/categories`, {
-      method: 'POST',
+      method: "POST",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
@@ -192,7 +198,7 @@ export async function createCategory(
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to create category',
+        message: data?.message || "Failed to create category",
       };
     }
     return {
@@ -203,7 +209,7 @@ export async function createCategory(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -211,12 +217,12 @@ export async function createCategory(
 /** PUT /api/categories/:id — update category */
 export async function updateCategory(
   id: string,
-  formData: FormData
+  formData: FormData,
 ): Promise<{ success: boolean; data?: Category; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/categories/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
@@ -224,7 +230,7 @@ export async function updateCategory(
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to update category',
+        message: data?.message || "Failed to update category",
       };
     }
     return {
@@ -235,26 +241,26 @@ export async function updateCategory(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
 
 /** DELETE /api/categories/:id */
 export async function deleteCategory(
-  id: string
+  id: string,
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/categories/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to delete category',
+        message: data?.message || "Failed to delete category",
       };
     }
     return {
@@ -264,7 +270,7 @@ export async function deleteCategory(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -281,9 +287,9 @@ export async function createSubCategory(body: {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/sub-categories`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
@@ -292,7 +298,7 @@ export async function createSubCategory(body: {
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to create sub-category',
+        message: data?.message || "Failed to create sub-category",
       };
     }
     return {
@@ -303,7 +309,7 @@ export async function createSubCategory(body: {
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -311,14 +317,14 @@ export async function createSubCategory(body: {
 /** PUT /api/sub-categories/:id */
 export async function updateSubCategory(
   id: string,
-  body: { name?: string; category?: string }
+  body: { name?: string; category?: string },
 ): Promise<{ success: boolean; data?: SubCategory; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/sub-categories/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
@@ -327,7 +333,7 @@ export async function updateSubCategory(
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to update sub-category',
+        message: data?.message || "Failed to update sub-category",
       };
     }
     return {
@@ -338,26 +344,26 @@ export async function updateSubCategory(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
 
 /** DELETE /api/sub-categories/:id */
 export async function deleteSubCategory(
-  id: string
+  id: string,
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/sub-categories/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to delete sub-category',
+        message: data?.message || "Failed to delete sub-category",
       };
     }
     return {
@@ -367,7 +373,7 @@ export async function deleteSubCategory(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -376,31 +382,13 @@ export async function deleteSubCategory(
 // ORDERS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface AdminOrder {
-  _id: string;
-  orderNumber?: string;
-  user?: { _id: string; name: string; email: string };
-  contactEmail?: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-  total?: number;
-  totalPrice?: number;
-  createdAt: string;
-  items?: unknown[];
-  shippingAddress?: {
-    fullName?: string;
-    address?: string;
-    city?: string;
-    country?: string;
-  };
-}
-
 /** GET /api/orders — all orders (admin) */
 export async function getAllOrdersAdmin(): Promise<AdminOrder[] | undefined> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/orders`, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      cache: "no-store",
     });
     const data: ApiListResponse<AdminOrder> = await res.json();
     return data.data;
@@ -412,23 +400,26 @@ export async function getAllOrdersAdmin(): Promise<AdminOrder[] | undefined> {
 /** PUT /api/orders/:id — update order status */
 export async function updateOrderStatus(
   orderId: string,
-  status: AdminOrder['status']
+  orderStatus: AdminOrder["status"],
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
-    const res = await fetch(`${BASE}/orders/${orderId}`, {
-      method: 'PUT',
+    const res = await fetch(`${BASE}/orders/${orderId}/status`, {
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ orderStatus }),
     });
+
     const data = await res.json().catch(() => null);
+
     if (!res.ok) {
+      console.error("updateOrderStatus failed:", res.status, data);
       return {
         success: false,
-        message: data?.message || 'Failed to update order status',
+        message: data?.message || "Failed to update order status",
       };
     }
     return {
@@ -438,7 +429,7 @@ export async function updateOrderStatus(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -447,22 +438,13 @@ export async function updateOrderStatus(
 // CUSTOMERS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export interface AdminCustomer {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-  ordersCount?: number;
-}
-
 /** GET /api/users — all users (admin) */
 export async function getAllCustomers(): Promise<AdminCustomer[] | undefined> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/users`, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      cache: "no-store",
     });
     const data: ApiListResponse<AdminCustomer> = await res.json();
     return data.data;
@@ -482,17 +464,25 @@ export async function getAdminStats() {
     getAllCustomers(),
   ]);
 
-  const productList = products.status === 'fulfilled' ? products.value ?? [] : [];
-  const orderList = orders.status === 'fulfilled' ? orders.value ?? [] : [];
-  const customerList = customers.status === 'fulfilled' ? customers.value ?? [] : [];
+  const productList =
+    products.status === "fulfilled" ? (products.value ?? []) : [];
+  const orderList = orders.status === "fulfilled" ? (orders.value ?? []) : [];
+  const customerList =
+    customers.status === "fulfilled" ? (customers.value ?? []) : [];
 
-  const revenue = orderList.reduce((sum, o) => sum + (o.total ?? o.totalPrice ?? 0), 0);
+  const revenue = orderList.reduce(
+    (sum, o) => sum + (o.total ?? o.totalPrice ?? 0),
+    0,
+  );
 
-  const statusCounts = orderList.reduce((acc, o) => {
-    const st = (o.status || 'pending').toLowerCase();
-    acc[st] = (acc[st] ?? 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const statusCounts = orderList.reduce(
+    (acc, o) => {
+      const st = (o.status || "pending").toLowerCase();
+      acc[st] = (acc[st] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   return {
     totalProducts: productList.length,
@@ -514,7 +504,7 @@ export async function getCouponsAdmin(): Promise<Coupon[] | undefined> {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/coupons`, {
       headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
+      cache: "no-store",
     });
     const data: ApiListResponse<Coupon> = await res.json();
     return data.data;
@@ -523,29 +513,92 @@ export async function getCouponsAdmin(): Promise<Coupon[] | undefined> {
   }
 }
 
+/** Validate a promo code against backend coupons — callable from client components */
+export async function validateCoupon(
+  code: string,
+  subtotal: number,
+): Promise<
+  | {
+      valid: true;
+      discount: number;
+      discountType: "percentage" | "fixed";
+      code: string;
+    }
+  | { valid: false; message: string }
+> {
+  try {
+    const token = await getAccessToken();
+
+    const res = await fetch(`${BASE}/coupons/apply`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ code: code.trim(), subtotal }),
+      cache: "no-store",
+    });
+
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      console.error("validateCoupon failed:", res.status, data);
+      return {
+        valid: false,
+        message: data?.message || "Invalid coupon code.",
+      };
+    }
+
+    console.log("validateCoupon response:", data);
+
+    const coupon = data?.data?.coupon;
+    const discountAmount = data?.data?.discountAmount;
+
+    if (!coupon || discountAmount == null) {
+      return { valid: false, message: "Could not read the coupon discount." };
+    }
+
+    return {
+      valid: true,
+      discount: Number(discountAmount),
+      discountType: "fixed", // مبلغ جاهز من الباك إند
+      code: coupon.code,
+    };
+  } catch (err) {
+    console.error("validateCoupon error:", err);
+    return { valid: false, message: "Something went wrong. Try again." };
+  }
+}
+
 /** POST /api/coupons */
 export async function createCoupon(body: {
   code: string;
   discount: number;
-  discountType: 'percentage' | 'fixed';
+  discountType: "percentage" | "fixed";
   expiresAt?: string;
   usageLimit?: number;
 }): Promise<{ success: boolean; data?: Coupon; message?: string }> {
   try {
     const token = await getAccessToken();
+    const payload = {
+      code: body.code,
+      discountPercentage: body.discount,
+      expireDate: new Date(body.expiresAt).toISOString(),
+      usageLimit: body.usageLimit,
+    };
     const res = await fetch(`${BASE}/coupons`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to create coupon',
+        message: data?.message || "Failed to create coupon",
       };
     }
     return {
@@ -556,7 +609,7 @@ export async function createCoupon(body: {
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
@@ -567,18 +620,18 @@ export async function updateCoupon(
   body: Partial<{
     code: string;
     discount: number;
-    discountType: 'percentage' | 'fixed';
+    discountType: "percentage" | "fixed";
     expiresAt: string;
     isActive: boolean;
     usageLimit: number;
-  }>
+  }>,
 ): Promise<{ success: boolean; data?: Coupon; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/coupons/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
@@ -587,7 +640,7 @@ export async function updateCoupon(
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to update coupon',
+        message: data?.message || "Failed to update coupon",
       };
     }
     return {
@@ -598,26 +651,26 @@ export async function updateCoupon(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }
 
 /** DELETE /api/coupons/:id */
 export async function deleteCoupon(
-  id: string
+  id: string,
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
     const res = await fetch(`${BASE}/coupons/${id}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json().catch(() => null);
     if (!res.ok) {
       return {
         success: false,
-        message: data?.message || 'Failed to delete coupon',
+        message: data?.message || "Failed to delete coupon",
       };
     }
     return {
@@ -627,7 +680,7 @@ export async function deleteCoupon(
   } catch (err) {
     return {
       success: false,
-      message: (err as Error).message || 'An unexpected error occurred',
+      message: (err as Error).message || "An unexpected error occurred",
     };
   }
 }

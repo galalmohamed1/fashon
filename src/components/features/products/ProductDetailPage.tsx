@@ -145,7 +145,6 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleBuyNow = () => {
     addToCart(product, selectedColor, selectedSize, quantity);
-    setActivePage('checkout');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -447,12 +446,13 @@ export const ProductDetailPage: React.FC = () => {
               </div>
 
               {/* Instant Buy Now Button */}
-              <button
+              <Link
+                href="/checkout"
                 onClick={handleBuyNow}
-                className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-black font-mono text-xs uppercase tracking-[0.2em] font-bold transition-all cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-black font-mono text-xs uppercase tracking-[0.2em] font-bold transition-all cursor-pointer flex items-center justify-center"
               >
                 EXPRESS CHECKOUT
-              </button>
+              </Link>
             </div>
 
             {/* Value Props & Shipping info */}

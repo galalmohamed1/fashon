@@ -4,14 +4,18 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Filter, SlidersHorizontal, ArrowUpDown, X, Search, RotateCcw, Grid3X3, Grid2X2 } from 'lucide-react';
 
 import { useShop } from '../../../lib/context/ShopContext';
-import { Product, SortOption } from '../../../types';
+import { Category, Product, SortOption } from '../../../types';
 import { ProductCard } from '../../shared/ProductCard';
-import { getAllProdects } from '@/app/api/services/prodect.services';
-type SubCategory = {
-  id: string;
+import { getCategories } from '@/app/api/services/category.services';
+import { getSubCategoriesByCategory } from '@/app/api/services/subCategory.services';
+type CategoryTab = {
+  id: string;    // category _id
+  slug: string;  // category slug (for display/URL)
   label: string;
+  image?: string;
 };
-const ALL: SubCategory = { id: 'all', label: 'ALL ARCHIVE' };
+
+const ALL: CategoryTab = { id: "all", slug: "all", label: "ALL ARCHIVE" };
 
 export const ShopPage: React.FC = () => {
   const { products, filters, setFilters, resetFilters, setSelectedCategory } = useShop();
@@ -20,40 +24,32 @@ export const ShopPage: React.FC = () => {
   const [gridCols, setGridCols] = useState<3 | 4>(3);
   const [visibleCount, setVisibleCount] = useState(12);
 
-  const [subCategory, setSubCategory] = useState<SubCategory[]>([ALL]);
-  
+  const [category, setCategory] = useState<CategoryTab[]>([ALL]);
+  // subCategory _ids belonging to the currently selected parent category
+  const [activeCatSubIds, setActiveCatSubIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    async function getSubCategories() {
+    async function loadCategories() {
       try {
-        const products = await getAllProdects()
-        if (!products) return;
-         products.forEach((p: Product) => {
+        const data: Category[] = await getCategories();
+        if (!data) return;
 
-          const found: SubCategory[] = [];
+        const tabs: CategoryTab[] = data
+          .filter((c) => !c.isDeleted)
+          .map((c) => ({
+            id: c._id,    // use _id so we can query subCategories by it
+            slug: c.slug,
+            label: c.name,
+            image: c.image?.secure_url,
+          }));
 
-          products.forEach((p: Product) => {
-            if (!p.subCategory) return;
-
-            const id = p.subCategory.slug.toLowerCase();
-            const label = p.subCategory.name.toUpperCase();
-
-            const exists = found.find((c) => c.id === id);
-            if (!exists) {
-              found.push({ id, label });
-            }
-          });
-        
-
-          setSubCategory([ALL, ...found]);
-
-        })
+        setCategory([ALL, ...tabs]);
       } catch (err) {
         console.error(err);
       }
     }
-    getSubCategories();
-  },[]);
+    loadCategories();
+  }, []);
   
 
   const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'ONE SIZE'];
@@ -74,10 +70,22 @@ export const ShopPage: React.FC = () => {
     { id: 'rating', label: 'CUSTOMER RATING' }
   ];
 
-  // Category switch
-  const handleCategorySelect = (catId: string) => {
+  // Category switch — fetch the subCategory IDs for the selected category
+  const handleCategorySelect = async (catId: string) => {
     setSelectedCategory(catId);
     setFilters((prev) => ({ ...prev, category: catId as any }));
+
+    if (catId === 'all') {
+      setActiveCatSubIds(new Set());
+      return;
+    }
+
+    try {
+      const subs = await getSubCategoriesByCategory(catId);
+      setActiveCatSubIds(new Set(subs.map((s) => s._id)));
+    } catch {
+      setActiveCatSubIds(new Set());
+    }
   };
 
   // Toggle size filter
@@ -106,14 +114,10 @@ export const ShopPage: React.FC = () => {
           ? product.discountPrice
           : product.price;
 
-        // Category / SubCategory
+        // Category filter — check if the product's subCategory belongs to the selected category
         if (filters.category && (filters.category as any) !== 'all') {
-          const catStr = String(filters.category).toLowerCase();
-          const subCatSlug = product.subCategory?.slug?.toLowerCase() || '';
-          const subCatName = product.subCategory?.name?.toLowerCase() || '';
-          if (!subCatSlug.includes(catStr) && !subCatName.includes(catStr)) {
-            return false;
-          }
+          const subId = product.subCategory?._id;
+          if (!subId || !activeCatSubIds.has(subId)) return false;
         }
 
         // Price
@@ -152,7 +156,7 @@ export const ShopPage: React.FC = () => {
             return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
         }
       });
-  }, [products, filters]);
+  }, [products, filters, activeCatSubIds]);
 
   const displayedProducts = filteredProducts.slice(0, visibleCount);
 
@@ -189,7 +193,7 @@ export const ShopPage: React.FC = () => {
 
         {/* Category Pills Slider */}
         <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-none mb-8 border-b border-zinc-200">
-          {subCategory.map((cat) => {
+          {category.map((cat) => {
             const isSelected = (filters.category as any) === cat.id;
             return (
               <button
@@ -423,14 +427,17 @@ export const ShopPage: React.FC = () => {
         {activeFiltersCount > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-8">
             <span className="text-[11px] font-mono text-zinc-500 uppercase font-semibold">ACTIVE:</span>
-            {(filters.category as any) !== 'all' && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-900 font-semibold">
-                CATEGORY: {String(filters.category).toUpperCase()}
-                <button onClick={() => setFilters((prev) => ({ ...prev, category: 'all' as any }))}>
-                  <X className="w-3 h-3 text-zinc-500 hover:text-black" />
-                </button>
-              </span>
-            )}
+            {(filters.category as any) !== 'all' && (() => {
+              const activeCat = category.find((c) => c.id === (filters.category as any));
+              return (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-900 font-semibold">
+                  CATEGORY: {(activeCat?.label ?? String(filters.category)).toUpperCase()}
+                  <button onClick={() => { setFilters((prev) => ({ ...prev, category: 'all' as any })); setActiveCatSubIds(new Set()); }}>
+                    <X className="w-3 h-3 text-zinc-500 hover:text-black" />
+                  </button>
+                </span>
+              );
+            })()}
             {filters.sizes.map((s) => (
               <span key={s} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-300 text-xs font-mono text-zinc-900 font-semibold">
                 SIZE: {s}

@@ -1,6 +1,11 @@
-import { CartItem } from './cart';
+import { CartItem } from "./cart";
 
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
 
 export interface ShippingMethod {
   id: string;
@@ -22,7 +27,7 @@ export interface CheckoutFormData {
   zipCode: string;
   phone: string;
   shippingMethod: string;
-  paymentMethod: 'card' | 'apple_pay' | 'crypto';
+  paymentMethod: "card" | "apple_pay" | "crypto";
   cardNumber?: string;
   cardExpiry?: string;
   cardCvc?: string;
@@ -52,3 +57,16 @@ export interface Order {
   trackingNumber?: string;
   estimatedDelivery?: string;
 }
+export type ShippingAddress = {
+  fullName: string;
+  phoneNumber: string;
+  country: string;
+  governorate: string;
+  city: string;
+  area: string;
+  street: string;
+  building: string;
+  apartment: string;
+  postalCode: string;
+  notes?: string;
+};

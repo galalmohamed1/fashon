@@ -3,19 +3,20 @@
 import { useState } from 'react';
 import { Search, Loader2, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
-import { AdminOrder, updateOrderStatus } from '@/actions/admin.actions';
+import { updateOrderStatus } from '@/actions/admin.actions';
 import { StatusBadge } from '@/components/admin/StatusBadge';
+import { AdminOrder, AdminOrderItem } from '@/types/admin/adminOrders';
 
 interface OrdersTableProps {
   initialOrders: AdminOrder[];
 }
 
 const statusOptions: AdminOrder['status'][] = [
-  'pending',
-  'processing',
-  'shipped',
-  'delivered',
-  'cancelled',
+  'Pending',
+  'Processing',
+  'Shipped',
+  'Delivered',
+  'Cancelled',
 ];
 
 export function OrdersTable({ initialOrders }: OrdersTableProps) {
@@ -234,7 +235,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="p-1 text-zinc-400 hover:text-black rounded transition-colors"
+                className="cursor-pointer p-1 text-zinc-400 hover:text-black rounded transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -259,6 +260,49 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                 </p>
               </div>
             </div>
+
+            {/* Order Items */}
+            {selectedOrder.items && selectedOrder.items.length > 0 && (
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-3">
+                  ORDER ITEMS ({selectedOrder.items.length})
+                </p>
+                <div className="border border-zinc-200 rounded overflow-hidden divide-y divide-zinc-100">
+                  {selectedOrder.items.map((item: AdminOrderItem, idx: number) => {
+                    const productName =
+                      typeof item.product === 'object' && item.product?.name
+                        ? item.product.name
+                        : item.name ?? 'Unknown Product';
+                    const qty = item.quantity ?? 1;
+                    const price = item.price ?? 0;
+                    return (
+                      <div key={item._id ?? idx} className="flex items-center justify-between px-4 py-3 bg-white hover:bg-zinc-50/60 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center font-mono text-[10px] font-bold text-zinc-500 shrink-0">
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-black leading-tight">{productName}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              {item.size && (
+                                <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-400">SIZE: {item.size}</span>
+                              )}
+                              {item.color && (
+                                <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-400">COLOR: {item.color}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-mono text-xs font-bold text-black">x{qty}</p>
+                          <p className="font-mono text-[11px] text-zinc-500">${(price * qty).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Customer & Shipping */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -293,7 +337,6 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                 )}
               </div>
             </div>
-
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setSelectedOrder(null)}

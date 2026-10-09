@@ -7,6 +7,8 @@ export interface SubCategory {
   _id: string;
   name: string;
   slug: string;
+  /** Parent category — can be an ID string or a populated object */
+  category?: string | { _id: string; name: string; slug: string } | null;
 }
 
 export interface Product {

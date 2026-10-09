@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Search, UserCheck, Shield } from 'lucide-react';
-import { AdminCustomer } from '@/actions/admin.actions';
+import { AdminCustomer } from '@/types/admin/adminCustomer';
 
 interface CustomersTableProps {
   initialCustomers: AdminCustomer[];

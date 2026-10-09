@@ -29,7 +29,6 @@ import {
   AddToCart,
   getLoggedUserCart,
   RemoveProduct,
-  RemoveAllProductsFromCart,
   UpdateProductQuantity,
 } from "@/actions/cart.actions";
 
@@ -74,13 +73,19 @@ interface ShopContextType {
   removeFromCart: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, delta: number) => Promise<void>;
   updatingItemId: string | null;
-  clearCart: () => Promise<void>;
-  isClearingCart: boolean;
 
   refreshCart: () => Promise<void>;
 
   cartCount: number;
   cartSubtotal: number;
+
+  // Coupon
+  appliedCouponCode: string;
+  discountFixed: number;
+  discountPercent: number;
+  discountAmount: number;
+  setAppliedCoupon: (code: string, fixed: number, percent: number) => void;
+  clearCoupon: () => void;
 
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
@@ -204,6 +209,24 @@ const refreshWishlist = useCallback(async () => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(
     null
   );
+
+  // Coupon
+  const [appliedCouponCode, setAppliedCouponCode] = useState('');
+  const [discountFixed, setDiscountFixed] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+
+
+  const setAppliedCoupon = (code: string, fixed: number, percent: number) => {
+    setAppliedCouponCode(code);
+    setDiscountFixed(fixed);
+    setDiscountPercent(percent);
+  };
+
+  const clearCoupon = () => {
+    setAppliedCouponCode('');
+    setDiscountFixed(0);
+    setDiscountPercent(0);
+  };
 
   // Filters
   const [filters, setFilters] = useState<FilterState>(initialFilters);
@@ -443,40 +466,6 @@ const updateQuantity = async (itemId: string, delta: number) => {
   }
 };
 
-  // =========================
-  // Clear Cart
-  // =========================
-
-  const [isClearingCart, setIsClearingCart] = useState(false);
-
-  const clearCart = async () => {
-    setIsClearingCart(true);
-    try {
-      const response = await RemoveAllProductsFromCart();
-      if (!response?.success) {
-        addToast({
-          title: "Could not clear cart",
-          message: response?.message ?? "Please try again.",
-          type: "warning",
-        });
-        return;
-      }
-      setCart([]);
-      addToast({
-        title: "Cart Cleared",
-        message: "All items have been removed.",
-        type: "info",
-      });
-    } catch (error) {
-      console.error("Failed to clear cart:", error);
-      addToast({
-        title: "Error clearing cart",
-        type: "warning",
-      });
-    } finally {
-      setIsClearingCart(false);
-    }
-  };
 
   // =========================
   // Wishlist
@@ -568,6 +557,10 @@ const updateQuantity = async (itemId: string, delta: number) => {
     );
   }, [cart]);
 
+  const discountAmount = discountFixed > 0
+    ? discountFixed
+    : (cartSubtotal * discountPercent) / 100;
+
   // =========================
   // Wishlist Count
   // =========================
@@ -612,13 +605,19 @@ const updateQuantity = async (itemId: string, delta: number) => {
         removeFromCart,
         updateQuantity,
         updatingItemId,
-        clearCart,
-        isClearingCart,
         refreshCart,
         cartCount,
         cartSubtotal,
         isCartOpen,
         setIsCartOpen,
+
+        // Coupon
+        appliedCouponCode,
+        discountFixed,
+        discountPercent,
+        discountAmount,
+        setAppliedCoupon,
+        clearCoupon,
 
         // Wishlist
         wishlist,

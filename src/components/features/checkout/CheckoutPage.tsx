@@ -1,40 +1,52 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import {
   ShieldCheck,
   CreditCard,
   Lock,
   ArrowLeft,
   CheckCircle2,
-  Truck,
-  Sparkles,
   ShoppingBag,
   Gift
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useShop } from '../../../lib/context/ShopContext';
+
 import Link from 'next/link';
+import { addOrder } from '@/actions/checkout.actions';
 
 export const CheckoutPage: React.FC = () => {
-  const { cart, cartSubtotal, clearCart, setActivePage } = useShop();
+  const {
+    cart,
+    cartSubtotal,
+    setActivePage,
+    appliedCouponCode,
+    discountAmount,
+    clearCoupon,
+    addToast,
+    // clearCart,
+  } = useShop();
 
   // Form State
   const [formData, setFormData] = useState({
-    email: '',
     firstName: '',
     lastName: '',
-    address: '',
-    apartment: '',
-    city: '',
-    country: 'United States',
-    state: '',
-    zip: '',
     phone: '',
+    country: 'Egypt',
+    governorate: '',
+    city: '',
+    area: '',
+    street: '',
+    building: '',
+    apartment: '',
+    postalCode: '',
+    notes: '',
+    // Payment (زي ما هو)
     cardNumber: '',
     cardExp: '',
     cardCvc: '',
-    paymentMethod: 'card' as 'card' | 'apple' | 'Instapay'
+    paymentMethod: 'Instapay' as 'card' | 'apple' | 'Instapay',
   });
 
   const [deliveryMethod, setDeliveryMethod] = useState<'standard' | 'express'>('standard');
@@ -47,14 +59,17 @@ export const CheckoutPage: React.FC = () => {
 
   const handleSelectSavedAddress = (addr: any) => {
     setUseSavedAddress(true);
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       firstName: addr.recipient?.split(' ')[0] || '',
       lastName: addr.recipient?.split(' ').slice(1).join(' ') || '',
-      address: addr.street || '',
+      street: addr.street || '',
       city: addr.city || '',
-      state: addr.state || '',
-      zip: addr.zipCode || '',
+      governorate: addr.governorate || addr.state || '',
+      area: addr.area || '',
+      building: addr.building || '',
+      apartment: addr.apartment || '',
+      postalCode: addr.postalCode || addr.zipCode || '',
     }));
   };
 
@@ -70,11 +85,14 @@ export const CheckoutPage: React.FC = () => {
     }
   }, []);
 
+  // للعرض فقط، الباك إند هو اللي بيحسب الإجمالي الحقيقي
   const shippingCost = deliveryMethod === 'standard' ? (cartSubtotal >= 150 ? 0 : 12) : 24;
   const estimatedTax = Number((cartSubtotal * 0.08).toFixed(2));
-  const finalTotal = cartSubtotal + shippingCost + estimatedTax;
+  const finalTotal = Math.max(0, cartSubtotal - discountAmount) + shippingCost + estimatedTax;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
@@ -86,14 +104,28 @@ export const CheckoutPage: React.FC = () => {
     }
   };
 
+  const inputCls = (name: string) =>
+    `w-full px-4 py-3 rounded-xl bg-white border ${
+      errors[name] ? 'border-red-500' : 'border-zinc-300'
+    } text-xs font-mono text-black focus:outline-none focus:border-black`;
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!formData.email || !formData.email.includes('@')) newErrors.email = 'Valid email is required';
-    if (!formData.firstName) newErrors.firstName = 'First name is required';
-    if (!formData.lastName) newErrors.lastName = 'Last name is required';
-    if (!formData.address) newErrors.address = 'Street address is required';
-    if (!formData.city) newErrors.city = 'City is required';
-    if (!formData.zip) newErrors.zip = 'Postal code is required';
+
+    if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+
+    // رقم مصري: 01 + (0/1/2/5) + 8 أرقام
+    if (!/^01[0125]\d{8}$/.test(formData.phone.trim())) {
+      newErrors.phone = 'Valid Egyptian phone required (01xxxxxxxxx)';
+    }
+
+    if (!formData.governorate.trim()) newErrors.governorate = 'Governorate is required';
+    if (!formData.city.trim()) newErrors.city = 'City is required';
+    if (!formData.area.trim()) newErrors.area = 'Area is required';
+    if (!formData.street.trim()) newErrors.street = 'Street is required';
+    if (!formData.building.trim()) newErrors.building = 'Building is required';
+    if (!formData.postalCode.trim()) newErrors.postalCode = 'Postal code is required';
 
     if (formData.paymentMethod === 'card') {
       if (!formData.cardNumber || formData.cardNumber.replace(/\s/g, '').length < 15) {
@@ -107,30 +139,55 @@ export const CheckoutPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    try {
+      const result = await addOrder({
+        shippingAddress: {
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+          phoneNumber: formData.phone.trim(),
+          country: formData.country,
+          governorate: formData.governorate.trim(),
+          city: formData.city.trim(),
+          area: formData.area.trim(),
+          street: formData.street.trim(),
+          building: formData.building.trim(),
+          apartment: formData.apartment.trim(),
+          postalCode: formData.postalCode.trim(),
+          notes: formData.notes.trim() || undefined,
+        },
+        // الـ API دلوقتي بيقبل CashOnDelivery بس (بيانات الكارت مبتتبعتش أبداً)
+        paymentMethod: 'CashOnDelivery',
+        couponCode: appliedCouponCode || undefined,
+      });
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      const generatedOrder = `TX-${Math.floor(100000 + Math.random() * 900000)}`;
-      setOrderNumber(generatedOrder);
-      setOrderComplete(true);
-      clearCart();
-
-      // Fire victory confetti
-      try {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
+      if (!result.success) {
+        addToast({
+          title: 'ORDER FAILED',
+          message: result.message,
+          type: 'warning',
         });
+        return;
+      }
+
+      const d: any = result.data;
+      setOrderNumber(d?.orderNumber || d?.order?._id || d?._id || '');
+      setOrderComplete(true);
+      clearCoupon();
+      // clearCart(); // لو الباك إند مش بيفضي الكارت بنفسه
+
+      try {
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       } catch {
         // ignore
       }
-    }, 1200);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (orderComplete) {
@@ -153,8 +210,10 @@ export const CheckoutPage: React.FC = () => {
           </h2>
 
           <div className="p-4 rounded-xl bg-white border border-zinc-200 font-mono text-xs text-zinc-700 space-y-2 mb-6 shadow-xs">
-            <p>ORDER REFERENCE: <strong className="text-black font-bold">{orderNumber}</strong></p>
-            <p>CONFIRMATION SENT TO: <strong className="text-black">{formData.email}</strong></p>
+            {orderNumber && (
+              <p>ORDER REFERENCE: <strong className="text-black font-bold">{orderNumber}</strong></p>
+            )}
+            <p>WE WILL CONTACT YOU ON: <strong className="text-black">{formData.phone}</strong></p>
             <p className="text-zinc-500 text-[11px]">DISPATCHING FROM ATELIER TOKYO WITHIN 24 HOURS</p>
           </div>
 
@@ -162,15 +221,12 @@ export const CheckoutPage: React.FC = () => {
             Your archive pieces are being prepared in custom climate-sealed luxury garment sleeves. You will receive tracking coordinates via SMS and email.
           </p>
 
-          <button
-            onClick={() => {
-              setActivePage('home');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+          <Link
+            href="/home"
             className="w-full py-4 rounded-xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-widest font-bold transition-all shadow-xl cursor-pointer"
           >
             RETURN TO ATELIER
-          </button>
+          </Link>
         </motion.div>
       </div>
     );
@@ -201,7 +257,7 @@ export const CheckoutPage: React.FC = () => {
   return (
     <div className="min-h-screen pt-18 sm:pt-18 pb-18 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Back Link */}
         <Link
           href="/shop"
@@ -212,73 +268,48 @@ export const CheckoutPage: React.FC = () => {
 
         {/* Checkout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          
+
           {/* Left: Form Sections */}
           <div className="lg:col-span-7 space-y-8">
-            
+
             <form onSubmit={handleSubmitOrder} className="space-y-8">
-              
-              {/* 1. CUSTOMER INFORMATION */}
+
+              {/* 1. CONTACT INFORMATION */}
               <div className="p-6 sm:p-8 rounded-2xl bg-zinc-50 border border-zinc-200 shadow-sm">
                 <div className="flex items-center justify-between pb-4 mb-6 border-b border-zinc-200">
                   <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-black flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px]">1</span>
                     CONTACT INFORMATION
                   </h3>
-                  <span className="text-[11px] font-mono text-zinc-500 font-bold">EXPRESS CHECKOUT</span>
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                      EMAIL ADDRESS *
+                      PHONE NUMBER *
                     </label>
                     <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
                       onChange={handleInputChange}
-                      placeholder="alex.vance@example.com"
-                      className={`w-full px-4 py-3 rounded-xl bg-white border ${
-                        errors.email ? 'border-red-500' : 'border-zinc-300'
-                      } text-xs font-mono text-black focus:outline-none focus:border-black`}
+                      placeholder="01000000000"
+                      className={inputCls('phone')}
                     />
-                    {errors.email && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.email}</p>}
+                    {errors.phone && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.phone}</p>}
                   </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        PHONE NUMBER
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        placeholder="+1 (555) 000-0000"
-                        className="w-full px-4 py-3 rounded-xl bg-white border text-xs font-mono text-black focus:outline-none focus:border-black"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        COUNTRY / REGION
-                      </label>
-                      <select
-                        name="country"
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl bg-white border text-xs font-mono text-black focus:outline-none focus:border-black uppercase font-medium"
-                      >
-                        <option value="United States">United States (USD)</option>
-                        <option value="Egypt">Egypt (EG)</option>
-                        <option value="United Kingdom">United Kingdom (GBP)</option>
-                        <option value="Japan">Japan (JPY)</option>
-                        <option value="Germany">Germany (EUR)</option>
-                        <option value="France">France (EUR)</option>
-                        <option value="Canada">Canada (CAD)</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                      COUNTRY / REGION
+                    </label>
+                    <select
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-zinc-300 text-xs font-mono text-black focus:outline-none focus:border-black uppercase font-medium"
+                    >
+                      <option value="Egypt">Egypt (EG)</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -304,7 +335,7 @@ export const CheckoutPage: React.FC = () => {
                             key={addr.id}
                             onClick={() => handleSelectSavedAddress(addr)}
                             className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                              useSavedAddress && formData.address === addr.street
+                              useSavedAddress && formData.street === addr.street
                                 ? 'border-black bg-white text-black shadow-xs'
                                 : 'border-zinc-200 bg-zinc-100 text-zinc-600 hover:border-zinc-400'
                             }`}
@@ -312,7 +343,7 @@ export const CheckoutPage: React.FC = () => {
                             <div className="flex items-center gap-3">
                               <input
                                 type="radio"
-                                checked={useSavedAddress && formData.address === addr.street}
+                                checked={useSavedAddress && formData.street === addr.street}
                                 onChange={() => {}}
                                 className="accent-black"
                               />
@@ -326,7 +357,18 @@ export const CheckoutPage: React.FC = () => {
                         <label
                           onClick={() => {
                             setUseSavedAddress(false);
-                            setFormData(prev => ({ ...prev, firstName: '', lastName: '', address: '', city: '', state: '', zip: '' }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              firstName: '',
+                              lastName: '',
+                              governorate: '',
+                              city: '',
+                              area: '',
+                              street: '',
+                              building: '',
+                              apartment: '',
+                              postalCode: '',
+                            }));
                           }}
                           className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                             !useSavedAddress
@@ -349,100 +391,161 @@ export const CheckoutPage: React.FC = () => {
                   )}
 
                   <div className={`space-y-4 ${useSavedAddress ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        FIRST NAME *
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        placeholder="Alex"
-                        className={`w-full px-4 py-3 rounded-xl bg-white border ${
-                          errors.firstName ? 'border-red-500' : 'border-zinc-300'
-                        } text-xs font-mono text-black focus:outline-none focus:border-black`}
-                      />
+                    {/* Names */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          FIRST NAME *
+                        </label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          placeholder="Mohammed"
+                          className={inputCls('firstName')}
+                        />
+                        {errors.firstName && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.firstName}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          LAST NAME *
+                        </label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          placeholder="Sherif"
+                          className={inputCls('lastName')}
+                        />
+                        {errors.lastName && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.lastName}</p>}
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        LAST NAME *
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        placeholder="Vance"
-                        className={`w-full px-4 py-3 rounded-xl bg-white border ${
-                          errors.lastName ? 'border-red-500' : 'border-zinc-300'
-                        } text-xs font-mono text-black focus:outline-none focus:border-black`}
-                      />
+
+                    {/* Governorate / City */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          GOVERNORATE *
+                        </label>
+                        <input
+                          type="text"
+                          name="governorate"
+                          value={formData.governorate}
+                          onChange={handleInputChange}
+                          placeholder="Cairo"
+                          className={inputCls('governorate')}
+                        />
+                        {errors.governorate && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.governorate}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          CITY *
+                        </label>
+                        <input
+                          type="text"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          placeholder="Nasr City"
+                          className={inputCls('city')}
+                        />
+                        {errors.city && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.city}</p>}
+                      </div>
+                    </div>
+
+                    {/* Area / Street */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          AREA *
+                        </label>
+                        <input
+                          type="text"
+                          name="area"
+                          value={formData.area}
+                          onChange={handleInputChange}
+                          placeholder="District 1"
+                          className={inputCls('area')}
+                        />
+                        {errors.area && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.area}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          STREET *
+                        </label>
+                        <input
+                          type="text"
+                          name="street"
+                          value={formData.street}
+                          onChange={handleInputChange}
+                          placeholder="Main Street"
+                          className={inputCls('street')}
+                        />
+                        {errors.street && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.street}</p>}
+                      </div>
+                    </div>
+
+                    {/* Building / Apartment / Postal */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          BUILDING *
+                        </label>
+                        <input
+                          type="text"
+                          name="building"
+                          value={formData.building}
+                          onChange={handleInputChange}
+                          placeholder="10"
+                          className={inputCls('building')}
+                        />
+                        {errors.building && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.building}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          APARTMENT
+                        </label>
+                        <input
+                          type="text"
+                          name="apartment"
+                          value={formData.apartment}
+                          onChange={handleInputChange}
+                          placeholder="5"
+                          className={inputCls('apartment')}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
+                          POSTAL CODE *
+                        </label>
+                        <input
+                          type="text"
+                          name="postalCode"
+                          value={formData.postalCode}
+                          onChange={handleInputChange}
+                          placeholder="11765"
+                          className={inputCls('postalCode')}
+                        />
+                        {errors.postalCode && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.postalCode}</p>}
+                      </div>
                     </div>
                   </div>
 
+                  {/* Notes (خارج الـ block المقفول عشان يفضل متاح مع العنوان المحفوظ) */}
                   <div>
                     <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                      STREET ADDRESS *
+                      DELIVERY NOTES
                     </label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
+                    <textarea
+                      name="notes"
+                      value={formData.notes}
                       onChange={handleInputChange}
-                      placeholder="742 Evergreen Terrace"
-                      className={`w-full px-4 py-3 rounded-xl bg-white border ${
-                        errors.address ? 'border-red-500' : 'border-zinc-300'
-                      } text-xs font-mono text-black focus:outline-none focus:border-black`}
+                      rows={3}
+                      placeholder="Call me before delivery"
+                      className="w-full px-4 py-3 rounded-xl bg-white border border-zinc-300 text-xs font-mono text-black focus:outline-none focus:border-black resize-none"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        CITY *
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        placeholder="New York"
-                        className={`w-full px-4 py-3 rounded-xl bg-white border ${
-                          errors.city ? 'border-red-500' : 'border-zinc-300'
-                        } text-xs font-mono text-black focus:outline-none focus:border-black`}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        STATE / PROVINCE
-                      </label>
-                      <input
-                        type="text"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        placeholder="NY"
-                        className="w-full px-4 py-3 rounded-xl bg-white border  text-xs font-mono text-black focus:outline-none focus:border-black"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
-                        POSTAL CODE *
-                      </label>
-                      <input
-                        type="text"
-                        name="zip"
-                        value={formData.zip}
-                        onChange={handleInputChange}
-                        placeholder="10001"
-                        className={`w-full px-4 py-3 rounded-xl bg-white border ${
-                          errors.zip ? 'border-red-500' : 'border-zinc-300'
-                        } text-xs font-mono text-black focus:outline-none focus:border-black`}
-                      />
-                    </div>
-                  </div>
                   </div>
                 </div>
               </div>
@@ -507,7 +610,7 @@ export const CheckoutPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 4. PAYMENT METHOD */}
+              {/* 4. PAYMENT METHOD (بدون تغيير) */}
               <div className="p-6 sm:p-8 rounded-2xl bg-zinc-50 border border-zinc-200 shadow-sm">
                 <div className="flex items-center justify-between pb-4 mb-6 border-b border-zinc-200">
                   <h3 className="font-mono text-xs font-bold uppercase tracking-widest text-black flex items-center gap-2">
@@ -625,9 +728,9 @@ export const CheckoutPage: React.FC = () => {
                 {formData.paymentMethod === 'Instapay' && (
                   <div className="p-6 rounded-xl bg-zinc-100 border border-zinc-200 text-center">
                     <p className="text-xs font-mono text-zinc-700 pb-4">
-                       Pay via InstaPay to <strong>01003044257</strong>, then send the payment screenshot on WhatsApp.
+                      Pay via InstaPay to <strong>01003044257</strong>, then send the payment screenshot on WhatsApp.
                     </p>
-                    <button className='w-full py-4 rounded-2xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-[0.25em] font-bold flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer'>
+                    <button type="button" className="w-full py-4 rounded-2xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-[0.25em] font-bold flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer">
                       <a href="https://wa.me/201003044257" target="_blank" rel="noopener noreferrer">
                         WhatsApp
                       </a>
@@ -641,7 +744,7 @@ export const CheckoutPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-5 rounded-2xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-[0.25em] font-bold flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer"
+                className="w-full py-5 rounded-2xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-[0.25em] font-bold flex items-center justify-center gap-3 transition-all shadow-xl cursor-pointer disabled:opacity-60"
               >
                 {isSubmitting ? (
                   <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -695,6 +798,24 @@ export const CheckoutPage: React.FC = () => {
                 <span>ITEMS SUBTOTAL</span>
                 <span className="text-black font-bold">${cartSubtotal.toFixed(2)}</span>
               </div>
+
+              {/* Discount Row */}
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center text-emerald-700 font-bold">
+                  <span className="flex items-center gap-1.5">
+                    <Gift className="w-3.5 h-3.5" />
+                    PROMO ({appliedCouponCode})
+                    <button
+                      type="button"
+                      onClick={clearCoupon}
+                      title="Remove coupon"
+                      className="text-emerald-600 hover:text-red-500 transition-colors cursor-pointer text-[10px]"
+                    >✕</button>
+                  </span>
+                  <span>-${discountAmount.toFixed(2)}</span>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <span>SHIPPING</span>
                 <span className="text-black font-bold">
