@@ -143,7 +143,6 @@ export const ProductDetailPage: React.FC = () => {
     }, 2000);
     
   };
-  console.log(handleAddToCart());
 
   const handleBuyNow = () => {
     addToCart(product, selectedColor, selectedSize, quantity);
