@@ -373,11 +373,7 @@ const refreshWishlist = useCallback(async () => {
     customColorHex?: string
   ) => {
     try {
-      /*
-       * Current API accepts only productId.
-       * Other parameters are kept to avoid changing
-       * the existing components.
-       */
+      
 
       const response = await AddToCart(product._id);
 

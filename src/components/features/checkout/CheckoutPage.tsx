@@ -42,7 +42,6 @@ export const CheckoutPage: React.FC = () => {
     apartment: '',
     postalCode: '',
     notes: '',
-    // Payment (زي ما هو)
     cardNumber: '',
     cardExp: '',
     cardCvc: '',
@@ -85,7 +84,6 @@ export const CheckoutPage: React.FC = () => {
     }
   }, []);
 
-  // للعرض فقط، الباك إند هو اللي بيحسب الإجمالي الحقيقي
   const shippingCost = deliveryMethod === 'standard' ? (cartSubtotal >= 150 ? 0 : 12) : 24;
   const estimatedTax = Number((cartSubtotal * 0.08).toFixed(2));
   const finalTotal = Math.max(0, cartSubtotal - discountAmount) + shippingCost + estimatedTax;
@@ -115,7 +113,7 @@ export const CheckoutPage: React.FC = () => {
     if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
 
-    // رقم مصري: 01 + (0/1/2/5) + 8 أرقام
+
     if (!/^01[0125]\d{8}$/.test(formData.phone.trim())) {
       newErrors.phone = 'Valid Egyptian phone required (01xxxxxxxxx)';
     }
@@ -160,7 +158,7 @@ export const CheckoutPage: React.FC = () => {
           postalCode: formData.postalCode.trim(),
           notes: formData.notes.trim() || undefined,
         },
-        // الـ API دلوقتي بيقبل CashOnDelivery بس (بيانات الكارت مبتتبعتش أبداً)
+        
         paymentMethod: 'CashOnDelivery',
         couponCode: appliedCouponCode || undefined,
       });

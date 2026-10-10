@@ -400,7 +400,7 @@ export async function getAllOrdersAdmin(): Promise<AdminOrder[] | undefined> {
 /** PUT /api/orders/:id — update order status */
 export async function updateOrderStatus(
   orderId: string,
-  orderStatus: AdminOrder["status"],
+  orderStatus: AdminOrder["orderStatus"],
 ): Promise<{ success: boolean; message?: string }> {
   try {
     const token = await getAccessToken();
@@ -470,19 +470,26 @@ export async function getAdminStats() {
   const customerList =
     customers.status === "fulfilled" ? (customers.value ?? []) : [];
 
-  const revenue = orderList.reduce(
-    (sum, o) => sum + (o.total ?? o.totalPrice ?? 0),
-    0,
-  );
+  // الإيراد = مجموع finalPrice (بعد الكوبون) للأوردرات غير الملغية وغير المحذوفة
+  const revenue = orderList.reduce((sum, o) => {
+    if (o.isDeleted) return sum;
+    if ((o.orderStatus ?? "").toLowerCase() === "cancelled") return sum;
+    return sum + (o.finalPrice ?? o.totalPrice ?? 0);
+  }, 0);
 
   const statusCounts = orderList.reduce(
     (acc, o) => {
-      const st = (o.status || "pending").toLowerCase();
+      const st = (o.orderStatus || "pending").toLowerCase();
       acc[st] = (acc[st] ?? 0) + 1;
       return acc;
     },
     {} as Record<string, number>,
   );
+
+  // الأحدث أولاً
+  const recentOrders = [...orderList]
+    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+    .slice(0, 5);
 
   return {
     totalProducts: productList.length,
@@ -490,7 +497,7 @@ export async function getAdminStats() {
     totalCustomers: customerList.length,
     revenue,
     statusCounts,
-    recentOrders: orderList.slice(0, 5),
+    recentOrders,
   };
 }
 

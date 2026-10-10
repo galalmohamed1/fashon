@@ -142,7 +142,7 @@ export default async function AdminOverviewPage() {
                   const id = order._id?.slice(-8).toUpperCase() ?? 'N/A';
                   const customerName =
                     order.shippingAddress?.fullName ||
-                    order.user?.name ||
+                    // order.user?.name ||
                     order.contactEmail ||
                     'Guest';
                   const date = order.createdAt
@@ -152,7 +152,7 @@ export default async function AdminOverviewPage() {
                         year: 'numeric',
                       })
                     : '—';
-                  const total = order.total ?? order.totalPrice ?? 0;
+                  const total = order.totalPrice ?? 0;
 
                   return (
                     <tr key={order._id} className="hover:bg-zinc-50/60 transition-colors">
@@ -166,7 +166,7 @@ export default async function AdminOverviewPage() {
                         {date}
                       </td>
                       <td className="px-6 py-4">
-                        <StatusBadge status={order.status} />
+                        <StatusBadge status={order.orderStatus} />
                       </td>
                       <td className="px-6 py-4 text-right font-mono text-xs font-bold text-black">
                         ${total.toLocaleString()}

@@ -141,7 +141,9 @@ export const ProductDetailPage: React.FC = () => {
     setTimeout(() => {
       setIsSuccess(false);
     }, 2000);
+    
   };
+  console.log(handleAddToCart());
 
   const handleBuyNow = () => {
     addToCart(product, selectedColor, selectedSize, quantity);

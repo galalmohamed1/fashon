@@ -11,13 +11,17 @@ interface OrdersTableProps {
   initialOrders: AdminOrder[];
 }
 
-const statusOptions: AdminOrder['status'][] = [
+const statusOptions: AdminOrder['orderStatus'][] = [
   'Pending',
   'Processing',
   'Shipped',
   'Delivered',
   'Cancelled',
 ];
+
+// الـ user ممكن يجي id كـ string، فبنرجّع object بس لو populated
+const getUser = (o: AdminOrder) =>
+  typeof o.user === 'object' && o.user !== null ? o.user : undefined;
 
 export function OrdersTable({ initialOrders }: OrdersTableProps) {
   const [orders, setOrders] = useState<AdminOrder[]>(initialOrders);
@@ -27,11 +31,11 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
 
   const filtered = orders.filter((o) => {
-    const orderStatus = (o.status || 'pending').toLowerCase();
+    const orderStatus = (o.orderStatus || 'pending').toLowerCase();
     const matchesStatus = statusFilter === 'all' || orderStatus === statusFilter.toLowerCase();
     const customer = (
       o.shippingAddress?.fullName ||
-      o.user?.name ||
+      getUser(o)?.name ||
       o.contactEmail ||
       ''
     ).toLowerCase();
@@ -43,7 +47,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
 
   const handleStatusChange = async (
     orderId: string,
-    newStatus: AdminOrder['status']
+    newStatus: AdminOrder['orderStatus']
   ) => {
     setUpdatingId(orderId);
     try {
@@ -51,10 +55,10 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
       if (res.success) {
         toast.success(`Order status updated to "${newStatus}"`);
         setOrders((prev) =>
-          prev.map((o) => (o._id === orderId ? { ...o, status: newStatus } : o))
+          prev.map((o) => (o._id === orderId ? { ...o, orderStatus: newStatus } : o))
         );
         if (selectedOrder && selectedOrder._id === orderId) {
-          setSelectedOrder((prev) => (prev ? { ...prev, status: newStatus } : null));
+          setSelectedOrder((prev) => (prev ? { ...prev, orderStatus: newStatus } : null));
         }
       } else {
         toast.error(res.message || 'Failed to update order status');
@@ -89,7 +93,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
             const count =
               tab === 'all'
                 ? orders.length
-                : orders.filter((o) => (o.status || 'pending').toLowerCase() === tab.toLowerCase()).length;
+                : orders.filter((o) => (o.orderStatus || 'pending').toLowerCase() === tab.toLowerCase()).length;
 
             return (
               <button
@@ -144,9 +148,10 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
               <tbody className="divide-y divide-zinc-100 font-sans">
                 {filtered.map((order) => {
                   const id = order._id?.slice(-8).toUpperCase() ?? 'N/A';
+                  const user = getUser(order);
                   const customerName =
                     order.shippingAddress?.fullName ||
-                    order.user?.name ||
+                    user?.name ||
                     order.contactEmail ||
                     'Guest';
                   const date = order.createdAt
@@ -156,7 +161,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                         year: 'numeric',
                       })
                     : '—';
-                  const total = order.total ?? order.totalPrice ?? 0;
+                  const total = order.finalPrice ?? order.totalPrice ?? 0;
                   const isUpdating = updatingId === order._id;
 
                   return (
@@ -166,9 +171,9 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                       </td>
                       <td className="px-6 py-4">
                         <p className="text-sm font-medium text-black">{customerName}</p>
-                        {order.user?.email && (
+                        {user?.email && (
                           <p className="text-xs text-zinc-400 font-mono">
-                            {order.user.email}
+                            {user.email}
                           </p>
                         )}
                       </td>
@@ -182,11 +187,11 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                         <div className="flex items-center gap-2">
                           <select
                             disabled={isUpdating}
-                            value={(order.status || 'pending').toLowerCase()}
+                            value={order.orderStatus || 'Pending'}
                             onChange={(e) =>
                               handleStatusChange(
                                 order._id,
-                                e.target.value as AdminOrder['status']
+                                e.target.value as AdminOrder['orderStatus']
                               )
                             }
                             className="text-[11px] font-mono uppercase tracking-wider bg-zinc-50 border border-zinc-200 rounded px-2.5 py-1 focus:outline-hidden focus:border-black cursor-pointer disabled:opacity-50"
@@ -248,7 +253,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                   CURRENT STATUS
                 </p>
                 <div className="mt-1">
-                  <StatusBadge status={selectedOrder.status} />
+                  <StatusBadge status={selectedOrder.orderStatus} />
                 </div>
               </div>
               <div className="text-right">
@@ -256,7 +261,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                   ORDER TOTAL
                 </p>
                 <p className="font-mono text-base font-bold text-black mt-0.5">
-                  ${(selectedOrder.total ?? selectedOrder.totalPrice ?? 0).toLocaleString()}
+                  ${(selectedOrder.finalPrice ?? selectedOrder.totalPrice ?? 0).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -301,6 +306,30 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                     );
                   })}
                 </div>
+
+                {/* Order Summary (subtotal / discount / total) */}
+                <div className="mt-3 px-4 py-3 bg-zinc-50 border border-zinc-200 rounded space-y-1 font-mono text-xs">
+                  <div className="flex justify-between text-zinc-600">
+                    <span>SUBTOTAL</span>
+                    <span>${(selectedOrder.totalPrice ?? 0).toLocaleString()}</span>
+                  </div>
+
+                  {(selectedOrder.discountAmount ?? 0) > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-bold">
+                      <span>
+                        DISCOUNT{selectedOrder.couponCode ? ` (${selectedOrder.couponCode})` : ''}
+                      </span>
+                      <span>-${(selectedOrder.discountAmount ?? 0).toLocaleString()}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between text-black font-bold text-sm pt-1 border-t border-zinc-200">
+                    <span>TOTAL</span>
+                    <span>
+                      ${(selectedOrder.finalPrice ?? selectedOrder.totalPrice ?? 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -312,12 +341,12 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                 </p>
                 <p className="text-sm font-medium text-black">
                   {selectedOrder.shippingAddress?.fullName ||
-                    selectedOrder.user?.name ||
+                    getUser(selectedOrder)?.name ||
                     'Guest'}
                 </p>
-                {selectedOrder.user?.email && (
+                {getUser(selectedOrder)?.email && (
                   <p className="font-mono text-xs text-zinc-600">
-                    {selectedOrder.user.email}
+                    {getUser(selectedOrder)?.email}
                   </p>
                 )}
               </div>
@@ -328,7 +357,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                 </p>
                 {selectedOrder.shippingAddress ? (
                   <p className="text-xs text-zinc-700">
-                    {selectedOrder.shippingAddress.address || '—'},{' '}
+                    {selectedOrder.shippingAddress.street || '—'},{' '}
                     {selectedOrder.shippingAddress.city || '—'},{' '}
                     {selectedOrder.shippingAddress.country || '—'}
                   </p>

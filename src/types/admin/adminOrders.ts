@@ -11,17 +11,29 @@ export interface AdminOrderItem {
 export interface AdminOrder {
   _id: string;
   orderNumber?: string;
-  user?: { _id: string; name: string; email: string };
+  user?: { _id: string; name: string; email: string } | string;
   contactEmail?: string;
-  status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
-  total?: number;
-  totalPrice?: number;
+  orderStatus: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
+  paymentMethod?: string;
+  isPaid?: boolean;
+  isDeleted?: boolean;
+  totalPrice: number;
+  discountAmount?: number; 
+  finalPrice: number; 
+  couponCode?: string;
   createdAt: string;
   items?: AdminOrderItem[];
   shippingAddress?: {
     fullName?: string;
-    address?: string;
-    city?: string;
+    phoneNumber?: string;
     country?: string;
+    governorate?: string;
+    city?: string;
+    area?: string;
+    street?: string;
+    building?: string;
+    apartment?: string;
+    postalCode?: string;
+    notes?: string;
   };
 }
