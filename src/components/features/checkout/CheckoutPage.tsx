@@ -220,7 +220,7 @@ export const CheckoutPage: React.FC = () => {
           </p>
 
           <Link
-            href="/home"
+            href="/shop"
             className="w-full py-4 rounded-xl bg-black text-white hover:bg-zinc-800 font-mono text-xs uppercase tracking-widest font-bold transition-all shadow-xl cursor-pointer"
           >
             RETURN TO ATELIER
@@ -400,7 +400,7 @@ export const CheckoutPage: React.FC = () => {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleInputChange}
-                          placeholder="Mohammed"
+                          placeholder="Galal"
                           className={inputCls('firstName')}
                         />
                         {errors.firstName && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.firstName}</p>}
@@ -414,7 +414,7 @@ export const CheckoutPage: React.FC = () => {
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleInputChange}
-                          placeholder="Sherif"
+                          placeholder="Mohamed"
                           className={inputCls('lastName')}
                         />
                         {errors.lastName && <p className="text-[10px] font-mono text-red-600 mt-1">{errors.lastName}</p>}
@@ -620,8 +620,11 @@ export const CheckoutPage: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mb-6">
-                  <button
+                <div
+                  // className="grid grid-cols-3 gap-2 mb-6"
+                  className="gap-2 mb-6"
+                >
+                  {/* <button
                     type="button"
                     onClick={() => setFormData((p) => ({ ...p, paymentMethod: 'card' }))}
                     className={`py-3 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
@@ -631,8 +634,8 @@ export const CheckoutPage: React.FC = () => {
                     }`}
                   >
                     CREDIT CARD
-                  </button>
-                  <button
+                  </button> */}
+                  {/* <button
                     type="button"
                     onClick={() => setFormData((p) => ({ ...p, paymentMethod: 'apple' }))}
                     className={`py-3 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
@@ -642,11 +645,11 @@ export const CheckoutPage: React.FC = () => {
                     }`}
                   >
                     APPLE PAY
-                  </button>
+                  </button> */}
                   <button
                     type="button"
                     onClick={() => setFormData((p) => ({ ...p, paymentMethod: 'Instapay' }))}
-                    className={`py-3 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+                    className={`w-full py-3 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
                       formData.paymentMethod === 'Instapay'
                         ? 'bg-black text-white border-black shadow-xs'
                         : 'bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400'
@@ -656,7 +659,7 @@ export const CheckoutPage: React.FC = () => {
                   </button>
                 </div>
 
-                {formData.paymentMethod === 'card' && (
+                {/* {formData.paymentMethod === 'card' && (
                   <div className="space-y-4">
                     <div>
                       <label className="block text-[11px] font-mono text-zinc-700 uppercase mb-1.5 font-bold">
@@ -721,7 +724,7 @@ export const CheckoutPage: React.FC = () => {
                       You will be prompted to authenticate with Face ID / Touch ID upon placing order.
                     </p>
                   </div>
-                )}
+                )} */}
 
                 {formData.paymentMethod === 'Instapay' && (
                   <div className="p-6 rounded-xl bg-zinc-100 border border-zinc-200 text-center">
@@ -780,7 +783,11 @@ export const CheckoutPage: React.FC = () => {
                       {item.product.name}
                     </h4>
                     <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
-                      QTY: {item.quantity} • {item.selectedSize} {item.selectedColor?.name ? `• ${item.selectedColor.name}` : ''}
+                      • QTY: {item.quantity}
+                      <br/>
+                      • Size: {item.size}
+                      <br/>
+                      • Color: {item.color}
                     </p>
                   </div>
                   <span className="font-mono text-xs font-bold text-black">

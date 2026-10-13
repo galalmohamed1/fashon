@@ -1,9 +1,14 @@
 "use server";
 
-import { ApiSingleResponse, Cart, CartItem } from "@/types";
+import { AddToCartPayload, ApiSingleResponse, Cart, CartItem } from "@/types";
 import { getAccessToken } from "@/types/utilities";
 
-export async function AddToCart(productId: string) {
+export async function AddToCart({
+  productId,
+  quantity = 1,
+  size,
+  color,
+}: AddToCartPayload) {
   const token = await getAccessToken();
   if (!token) {
     return Error("Hey 👋, please login to start add items to your cart");
@@ -14,7 +19,7 @@ export async function AddToCart(productId: string) {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ productId: productId }),
+    body: JSON.stringify({ productId, quantity, size, color }),
   });
   const data: ApiSingleResponse<Cart> = await res.json();
   return data.data;
@@ -58,7 +63,12 @@ export async function RemoveProduct(productId: string) {
       },
     },
   );
+  if (res) {
+  console.log("remove item Ok");
+  return;
+}
   const data = await res.json();
+  
   return data;
 }
 

@@ -46,7 +46,7 @@ export const ProductDetailPage: React.FC = () => {
 
   // Component State
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: 'Default', hex: '#121214' });
+  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: 'Mineral Gray', hex: '#52525B' });
   const [selectedSize, setSelectedSize] = useState<string>('M');
   const [quantity, setQuantity] = useState<number>(1);
   const [activeAccordion, setActiveAccordion] = useState<string | null>('materials');

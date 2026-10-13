@@ -14,16 +14,12 @@ export const CartDrawer: React.FC = () => {
     removeFromCart,
     updateQuantity,
     updatingItemId,
-    // clearCart,
-    // isClearingCart,
     cartSubtotal,
     cartCount,
     setActivePage,
     addToast,
     appliedCouponCode,
     discountAmount,
-    discountFixed,
-    discountPercent,
     setAppliedCoupon,
     clearCoupon,
   } = useShop();
@@ -37,6 +33,11 @@ export const CartDrawer: React.FC = () => {
   const remainingForFreeShipping = Math.max(0, freeShippingThreshold - cartSubtotal);
 
   const finalTotal = Math.max(0, cartSubtotal - discountAmount);
+  const COLOR_HEX: Record<string, string> = {
+  'Obsidian Black': '#121214',
+  'Pure White': '#F5F5F7',
+  'Mineral Gray': '#52525B',
+};
 
   const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +74,6 @@ export const CartDrawer: React.FC = () => {
 
   const handleProceedToCheckout = () => {
     setIsCartOpen(false);
-    // setActivePage('checkout');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -231,21 +231,21 @@ export const CartDrawer: React.FC = () => {
                           </button>
                         </div>
 
-                        {/* Specs — تتعرض بس لو موجودة فعلاً */}
-                        {(item.selectedSize || item.selectedColor) && (
+                        
+                        {(item.size || item.color) && (
                           <div className="flex items-center gap-2 mt-1 text-[11px] font-mono text-zinc-600">
-                            {item.selectedSize && (
-                              <span>SIZE: <strong className="text-black font-bold">{item.selectedSize}</strong></span>
+                            {item.size && (
+                              <span>SIZE: <strong className="text-black font-bold">{item.size}</strong></span>
                             )}
-                            {item.selectedSize && item.selectedColor && <span>•</span>}
-                            {item.selectedColor && (
+                            {item.size && item.color && <span>•</span>}
+                            {item.color && (
                               <span className="flex items-center gap-1">
                                 COLOR:
                                 <span
                                   className="w-2.5 h-2.5 rounded-full inline-block border border-zinc-300"
-                                  style={{ backgroundColor: item.selectedColor.hex }}
+                                  style={{ backgroundColor: COLOR_HEX[item.color] ?? COLOR_HEX[0] }}
                                 />
-                                <strong className="text-black font-bold">{item.selectedColor.name}</strong>
+                                <strong className="text-black font-bold">{item.color}</strong>
                               </span>
                             )}
                           </div>

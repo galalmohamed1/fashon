@@ -13,7 +13,11 @@ import {
   Tag,
   FolderOpen,
   FolderTree,
+  X,
+  Menu,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useSidebar } from '@/lib/context/SidebarContext';
 
 const navItems = [
   { label: 'OVERVIEW',       href: '/dashboard',            icon: LayoutDashboard, exact: true  },
@@ -27,23 +31,44 @@ const navItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { open, setOpen } = useSidebar();
+
+  useEffect(() => {
+    setOpen(false);
+  },[pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    }
+  }, [open]);
+
+
   function mySignOut() {
       signOut({ redirect: true, callbackUrl: '/login' });
     }
-  return (
-    <aside className="w-60 shrink-0 bg-zinc-950 flex flex-col border-r border-zinc-800">
-      {/* Brand */}
-      <div className="px-6 py-5 border-b border-zinc-800">
-        <p className="font-display font-black text-white text-xl uppercase tracking-widest leading-none">
-          GM
-        </p>
-        <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500 mt-1">
-          Admin Panel
-        </p>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+  const content = (
+    <>
+      <div className='flex justify-between items-start px-6 py-5 border-b border-zinc-800'>
+        <div>
+          <p className='font-display font-black text-white text-xl uppercase tracking-widest leading-none'>
+            GM
+          </p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.25em] text-zinc-500 mt-1">
+            Admin Panel
+          </p>
+        </div>
+        <button
+          onClick={() => setOpen(false)}
+          className="md:hidden text-zinc-400 hover:text-white cursor-pointer"
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map(({ label, href, icon: Icon, exact }) => {
           const isActive = exact ? pathname === href : pathname.startsWith(href);
           return (
@@ -62,8 +87,6 @@ export function AdminSidebar() {
           );
         })}
       </nav>
-
-      {/* Bottom actions */}
       <div className="px-3 py-4 border-t border-zinc-800 space-y-0.5">
         <button
           onClick={mySignOut}
@@ -73,6 +96,26 @@ export function AdminSidebar() {
           SIGN OUT
         </button>
       </div>
-    </aside>
+    </>
+  )
+  return (
+    <>
+    <aside className="hidden md:flex w-60 shrink-0 bg-zinc-950 flex-col border-r border-zinc-800">
+      {content}
+      </aside>
+      <div
+        onClick={() => setOpen(false)}
+        className={`md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
+          open ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      />
+      <aside
+        className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-zinc-950 flex flex-col border-r border-zinc-800 transition-transform duration-300 ease-out ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {content}
+      </aside>
+    </>
   );
 }

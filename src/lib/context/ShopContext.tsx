@@ -68,7 +68,7 @@ interface ShopContextType {
       | "minimal-logo"
       | "no-logo",
     customColorHex?: string
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 
   removeFromCart: (itemId: string) => Promise<void>;
   updateQuantity: (itemId: string, delta: number) => Promise<void>;
@@ -361,38 +361,42 @@ const refreshWishlist = useCallback(async () => {
   // =========================
 
   const addToCart = async (
-    product: Product,
-    color: ProductColor,
-    size: string,
-    quantity = 1,
-    customDesign?:
-      | "kiikii-cat"
-      | "threadx-logo"
-      | "minimal-logo"
-      | "no-logo",
-    customColorHex?: string
-  ) => {
-    try {
-      
+  product: Product,
+  color: ProductColor,
+  size: string,
+  quantity = 1,
+  customDesign?: "kiikii-cat" | "threadx-logo" | "minimal-logo" | "no-logo",
+  customColorHex?: string
+): Promise<boolean> => {
+  try {
+    const response = await AddToCart({
+      productId: product._id,
+      quantity,
+      size,
+      color: color.name,
+    });
 
-      const response = await AddToCart(product._id);
+    if (!response) return false;
 
-      if (!response) {
-        return;
-      }
+    await refreshCart();
 
-      await refreshCart();
-
-      addToast({
-        title: "Added to Bag",
-        message: product.name,
-        type: "cart",
-        image: product.images?.[0]?.secure_url,
-      });
-    } catch (error) {
-      console.error("Failed to add product to cart:", error);
-    }
-  };
+    addToast({
+      title: "Added to Bag",
+      message: product.name,
+      type: "cart",
+      image: product.images?.[0]?.secure_url,
+    });
+    return true;
+  } catch (error) {
+    console.error("Failed to add product to cart:", error);
+    addToast({
+      title: "Could not add to bag",
+      message: error instanceof Error ? error.message : "Please try again.",
+      type: "warning",
+    });
+    return false;
+  }
+};
 
   // =========================
   // Remove From Cart
@@ -401,7 +405,7 @@ const refreshWishlist = useCallback(async () => {
   const removeFromCart = async (itemId: string) => {
   try {
     const response = await RemoveProduct(itemId);
-
+    console.log("remove response:", response);
     if (!response?.success) {
       addToast({
         title: "Could not remove item",
