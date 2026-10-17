@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Heart, ShoppingBag, Check } from 'lucide-react';
 import { Product, ProductColor } from '../../types';
 import { useShop } from '../../lib/context/ShopContext';
+import { nameToHex, isLightColor} from '../features/products/ProductDetailPage';
 
 interface ProductCardProps {
   product: Product;
@@ -17,12 +18,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   showCategory = true
 }) => {
   const { openProductDetail, addToCart, toggleWishlist, isWishlisted } = useShop();
-  const [selectedColor, setSelectedColor] = useState<ProductColor>(
-    product.color?.[0] ? { name: product.color[0].name, hex: product.color[0].hex } : { name: 'Default', hex: '#121214' }
-  );
-  const [selectedSize, setSelectedSize] = useState<string>(
-    product.size?.[0]?.name ?? 'M'
-  );
+  const [selectedColor, setSelectedColor] = useState<ProductColor>(() => {
+  const first = product.colors?.[0];
+  if (!first) return { name: 'Default', hex: '#121214' };
+  const hex = nameToHex(first);
+  return { name: first, hex, border: isLightColor(hex) };
+});
+
+const [selectedSize, setSelectedSize] = useState<string>(
+  product.sizes?.[0] ?? 'M'
+);
   const [isQuickAdding, setIsQuickAdding] = useState(false);
   const [showSizeSelector, setShowSizeSelector] = useState(false);
   const [addedRecently, setAddedRecently] = useState(false);
@@ -35,9 +40,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const originalPrice = hasDiscount ? product.price : undefined;
   const imageUrl = product.images?.[0]?.secure_url || '';
   const inStock = product.isActive && !product.isDeleted;
-  const availableSizes = (product.size ?? []).map((s) => s.name).length > 0
-    ? (product.size ?? []).map((s) => s.name)
-    : ['S', 'M', 'L', 'XL'];
+  const availableSizes: string[] = product.sizes ?? [];
+  const availableColors: ProductColor[] = (product.colors ?? []).map((name) => {
+  const hex = nameToHex(name);
+  return { name, hex, border: isLightColor(hex) };
+});
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -86,7 +93,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       data-cursor="view"
     >
       {/* Product Image Container */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl bg-zinc-100 border border-zinc-200 group-hover:border-zinc-400 transition-all duration-500">
+      <div className="relative aspect-3/4 w-full overflow-hidden rounded-xl bg-zinc-100 border border-zinc-200 group-hover:border-zinc-400 transition-all duration-500">
         
         {/* Main Product Image with Zoom */}
         {imageUrl ? (
@@ -145,20 +152,57 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               onClick={(e) => e.stopPropagation()}
               className="absolute inset-x-3 bottom-3 z-30 p-3 rounded-xl bg-white/95 backdrop-blur-xl border border-zinc-300 shadow-2xl"
             >
+              {/* SIZES */}
               <p className="text-[10px] font-mono text-zinc-600 font-bold uppercase tracking-widest mb-2 text-center">
                 SELECT SIZE
               </p>
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="flex flex-wrap justify-center gap-1.5">
                 {availableSizes.map((size) => (
                   <button
                     key={size}
                     onClick={(e) => handleSelectSizeAndAdd(size, e)}
-                    className="py-1.5 text-xs font-mono font-bold rounded bg-zinc-100 hover:bg-black hover:text-white text-black transition-colors"
+                    className="min-w-10 px-3 py-1.5 text-xs font-mono font-bold rounded bg-zinc-100 hover:bg-black hover:text-white text-black transition-colors"
                   >
                     {size}
                   </button>
                 ))}
               </div>
+
+              {/* COLORS */}
+              {availableColors.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-zinc-200">
+                  <p className="text-[10px] font-mono text-zinc-600 font-bold uppercase tracking-widest mb-2 text-center">
+                    COLOR: <strong className="text-black">{selectedColor.name}</strong>
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-1.5">
+                    {availableColors.map((color) => {
+                      const isSelected = selectedColor.name === color.name;
+                      return (
+                        <button
+                          key={color.name}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedColor(color);
+                          }}
+                          className={`flex items-center gap-1.5 p-1 pr-2 rounded-full border transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-black bg-zinc-100 shadow-xs'
+                              : 'border-zinc-200 bg-white hover:border-zinc-400'
+                          }`}
+                        >
+                          <span
+                            className={`w-4 h-4 rounded-full ${color.border ? 'border border-zinc-400' : ''}`}
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <span className="text-[10px] font-mono text-zinc-800 font-medium">
+                            {color.name}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

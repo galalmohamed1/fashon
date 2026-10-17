@@ -40,12 +40,12 @@ const COLOR_HEX_MAP: Record<string, string> = {
   gold: '#D4AF37', silver: '#C0C0C0', bronze: '#CD7F32',
 };
 
-const nameToHex = (name: string): string => {
+export const nameToHex = (name: string): string => {
   const lower = name.toLowerCase().replace(/\s+/g, '');
   return COLOR_HEX_MAP[lower] ?? '#A1A1AA';
 };
 
-const isLightColor = (hex: string): boolean => {
+export const isLightColor = (hex: string): boolean => {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
