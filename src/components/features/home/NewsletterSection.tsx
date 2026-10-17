@@ -12,21 +12,14 @@ export const NewsletterSection: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
-      addToast({
-        title: 'Please enter a valid email address',
-        type: 'warning'
-      });
+      addToast({ title: 'Please enter a valid email address', type: 'warning' });
       return;
     }
 
     setStatus('loading');
     setTimeout(() => {
       setStatus('success');
-      addToast({
-        title: 'VIP ACCESS GRANTED',
-        message: 'You will receive private drop alerts 1 hour before public release.',
-        type: 'success'
-      });
+      addToast({ title: 'VIP ACCESS GRANTED', message: 'You will receive private drop alerts 1 hour before public release.', type: 'success' });
     }, 600);
   };
 

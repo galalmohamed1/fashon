@@ -8,7 +8,7 @@ import { ArrowLeft, Upload, Loader2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Product } from '@/types';
 import { Category, SubCategory } from '@/types/category';
-import { createProduct, updateProduct } from '@/actions/admin.actions';
+import { createProduct, updateProduct, ProductPayload } from '@/actions/admin.actions';
 import { compressImage } from '@/lib/compressImage';
 
 interface ProductFormProps {
@@ -61,6 +61,31 @@ export function ProductForm({
     (initialProduct as any)?.coupon ?? ''
   );
 
+  const PRESET_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(
+    (initialProduct as any)?.sizes ?? []
+  );
+  const [colors, setColors] = useState<string[]>(
+    (initialProduct as any)?.colors ?? []
+  );
+  const [colorInput, setColorInput] = useState('');
+
+  const toggleSize = (size: string) =>
+    setSelectedSizes((prev) =>
+      prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]
+    );
+
+  const addColor = () => {
+    const trimmed = colorInput.trim();
+    if (trimmed && !colors.includes(trimmed)) {
+      setColors((prev) => [...prev, trimmed]);
+    }
+    setColorInput('');
+  };
+
+  const removeColor = (c: string) =>
+    setColors((prev) => prev.filter((x) => x !== c));
+
   const filteredSubCategories = (subCategories || []).filter((sc) => {
     if (!category) return false;
     const scCatId =
@@ -105,97 +130,60 @@ export function ProductForm({
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  if (!name.trim()) {
-    toast.error("Product title is required");
-    return;
-  }
-
-  if (!description.trim()) {
-    toast.error("Product description is required");
-    return;
-  }
-
-  if (!price || Number(price) <= 0) {
-    toast.error("Valid price is required");
-    return;
-  }
-
-  if (stock === '' || Number(stock) < 0) {
-    toast.error("Valid stock quantity is required");
-    return;
-  }
-
-  if (!category) {
-    toast.error("Category is required");
-    return;
-  }
-
-  if (!subCategory) {
-    toast.error("SubCategory is required");
-    return;
-  }
-
-  if (!selectedFiles.length && !isEditing) {
-    toast.error("Product image is required");
-    return;
-  }
+  if (!name.trim()) { toast.error("Product title is required"); return; }
+  if (!description.trim()) { toast.error("Product description is required"); return; }
+  if (!price || Number(price) <= 0) { toast.error("Valid price is required"); return; }
+  if (stock === '' || Number(stock) < 0) { toast.error("Valid stock quantity is required"); return; }
+  if (!category) { toast.error("Category is required"); return; }
+  if (!subCategory) { toast.error("SubCategory is required"); return; }
+  if (selectedSizes.length === 0) { toast.error("Select at least one size"); return; }
+  if (colors.length === 0) { toast.error("Add at least one color"); return; }
+  if (!selectedFiles.length && !isEditing) { toast.error("Product image is required"); return; }
 
   setLoading(true);
 
   try {
-    const formData = new FormData();
-
-    // Product data
-    formData.append("name", name.trim());
-    formData.append("description", description.trim());
-    formData.append("price", price);
-    formData.append("stock", stock);
-
-    if (discountPrice) {
-      formData.append("discountPrice", discountPrice);
-    }
-
-    if (category) {
-      formData.append("category", category);
-    }
-
-    if (subCategory) {
-      formData.append("subCategory", subCategory);
-    }
-
-    if (couponCode) {
-      formData.append("coupon", couponCode);
-    }
-
-    // Images
+    // Convert files to base64 so they can be passed to the server action
     const compressedFiles = await Promise.all(
       selectedFiles.map((file) => compressImage(file))
     );
 
-    compressedFiles.forEach((file) => {
-      formData.append("images", file);
-    });
+    const imageBase64s = await Promise.all(
+      compressedFiles.map(
+        (file) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          })
+      )
+    );
 
-    // Create / Update
-    let res ;
+    const payload: ProductPayload = {
+      name: name.trim(),
+      description: description.trim(),
+      price,
+      stock,
+      ...(discountPrice && { discountPrice }),
+      ...(category && { category }),
+      ...(subCategory && { subCategory }),
+      ...(couponCode && { coupon: couponCode }),
+      sizes: selectedSizes,
+      colors,
+      ...(imageBase64s.length && { images: imageBase64s }),
+    };
 
-    if (isEditing && initialProduct) {
-      res = await updateProduct(initialProduct._id, formData);
-    } else {
-      res = await createProduct(formData);
-    }
+    const res = isEditing && initialProduct
+      ? await updateProduct(initialProduct._id, payload)
+      : await createProduct(payload);
 
     if (!res || !res.success) {
       toast.error(res?.message || "Operation failed. Please try again.");
       return;
     }
 
-    toast.success(
-      isEditing
-        ? "Product updated successfully"
-        : "Product created successfully"
-    );
-
+    toast.success(isEditing ? "Product updated successfully" : "Product created successfully");
     router.push("/dashboard/products");
     router.refresh();
 
@@ -365,6 +353,82 @@ const handleSubmit = async (e: React.FormEvent) => {
                 ))}
               </select>
             </div>
+          </div>
+        </div>
+
+        {/* Sizes & Colors */}
+        <div className="bg-white border border-zinc-200 rounded p-6 space-y-6 shadow-xs">
+          <h2 className="font-display font-bold text-sm text-black uppercase tracking-wider">
+            SIZES &amp; COLORS
+          </h2>
+
+          {/* Sizes */}
+          <div className="space-y-2">
+            <label className="font-mono text-[11px] uppercase tracking-widest text-zinc-600 block">
+              Available Sizes * {selectedSizes.length === 0 && <span className="text-red-400 ml-1">(required)</span>}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {PRESET_SIZES.map((size) => {
+                const isOn = selectedSizes.includes(size);
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => toggleSize(size)}
+                    className={`px-4 py-2 font-mono text-xs font-bold uppercase rounded border transition-all cursor-pointer ${
+                      isOn
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Colors */}
+          <div className="space-y-2">
+            <label className="font-mono text-[11px] uppercase tracking-widest text-zinc-600 block">
+              Available Colors * {colors.length === 0 && <span className="text-red-400 ml-1">(required)</span>}
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={colorInput}
+                onChange={(e) => setColorInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addColor(); } }}
+                placeholder="e.g. Red, Navy Blue, Off White"
+                className="flex-1 px-4 py-2.5 text-sm bg-white border border-zinc-200 rounded focus:outline-hidden font-sans transition-colors"
+              />
+              <button
+                type="button"
+                onClick={addColor}
+                className="px-4 py-2.5 bg-black text-white font-mono text-xs uppercase tracking-widest rounded hover:bg-zinc-800 transition-colors cursor-pointer"
+              >
+                ADD
+              </button>
+            </div>
+            {colors.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {colors.map((c) => (
+                  <span
+                    key={c}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-100 border border-zinc-200 rounded-full font-mono text-xs font-semibold text-black"
+                  >
+                    {c}
+                    <button
+                      type="button"
+                      onClick={() => removeColor(c)}
+                      className="text-zinc-400 hover:text-red-500 transition-colors cursor-pointer leading-none"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

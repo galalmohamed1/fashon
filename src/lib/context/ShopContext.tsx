@@ -234,6 +234,18 @@ const refreshWishlist = useCallback(async () => {
   // Toasts
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const addToast = (toast: Omit<ToastMessage, "id">) => {
+    const id = Math.random().toString(36).substring(2, 9);
+    setToasts((prev) => [...prev, { ...toast, id }]);
+    setTimeout(() => removeToast(id), 4000);
+  };
+
+
+
   // =========================
   // Products
   // =========================
@@ -322,29 +334,6 @@ const refreshWishlist = useCallback(async () => {
     }
   }, [status, refreshCart, refreshWishlist]);
 
-  // =========================
-  // Toast
-  // =========================
-
-  const addToast = (toast: Omit<ToastMessage, "id">) => {
-    const id = Math.random().toString(36).substring(2, 9);
-
-    setToasts((prev) => [
-      ...prev,
-      {
-        ...toast,
-        id,
-      },
-    ]);
-
-    setTimeout(() => {
-      removeToast(id);
-    }, 4000);
-  };
-
-  const removeToast = (id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  };
 
   // =========================
   // Navigation
@@ -405,7 +394,6 @@ const refreshWishlist = useCallback(async () => {
   const removeFromCart = async (itemId: string) => {
   try {
     const response = await RemoveProduct(itemId);
-    console.log("remove response:", response);
     if (!response?.success) {
       addToast({
         title: "Could not remove item",
@@ -416,13 +404,10 @@ const refreshWishlist = useCallback(async () => {
     }
 
     await refreshCart();
-
-    addToast({
-      title: "Removed from Bag",
-      type: "info",
-    });
+    addToast({ title: "Removed from Bag", type: "info" });
   } catch (error) {
     console.error("Failed to remove from cart:", error);
+    addToast({ title: "Could not remove item", message: "Please try again.", type: "warning" });
   }
   };
 
@@ -433,7 +418,7 @@ const refreshWishlist = useCallback(async () => {
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
 const updateQuantity = async (itemId: string, delta: number) => {
-  if (!cartId) return; // مفيش سلة أصلاً، منعملش حاجة
+  if (!cartId) return; 
 
   // Find the current item to calculate new quantity
   const currentItem = cart.find(
@@ -483,52 +468,27 @@ const updateQuantity = async (itemId: string, delta: number) => {
         const response = await RemoveFromWishlist(productId);
 
         if (response?.status === "unauthenticated") {
-          addToast({
-            title: "Login Required",
-            message: "Please login to manage your wishlist.",
-            type: "info",
-          });
-
+          addToast({ title: "Login Required", message: "Please login to manage your wishlist.", type: "info" });
           return;
         }
 
-        setWishlist((prev) =>
-          prev.filter((id) => id !== productId)
-        );
-
-        addToast({
-          title: "Removed from Wishlist",
-          message: product?.name,
-          type: "info",
-        });
-
+        setWishlist((prev) => prev.filter((id) => id !== productId));
+        addToast({ title: "Removed from Wishlist", message: product?.name, type: "info" });
         return;
       }
 
       const response = await AddToWishlist(productId);
 
       if (response?.status === "unauthenticated") {
-        addToast({
-          title: "Login Required",
-          message: "Please login to manage your wishlist.",
-          type: "info",
-        });
-
+        addToast({ title: "Login Required", message: "Please login to manage your wishlist.", type: "info" });
         return;
       }
 
       setWishlist((prev) =>
-        prev.includes(productId)
-          ? prev
-          : [...prev, productId]
+        prev.includes(productId) ? prev : [...prev, productId]
       );
 
-      addToast({
-        title: "Saved to Wishlist",
-        message: product?.name,
-        type: "success",
-        image: product?.images?.[0]?.secure_url,
-      });
+      addToast({ title: "Saved to Wishlist", message: product?.name, type: "success", image: product?.images?.[0]?.secure_url });
     } catch (error) {
       console.error("Failed to update wishlist:", error);
     }

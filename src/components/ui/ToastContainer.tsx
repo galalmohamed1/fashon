@@ -4,11 +4,35 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Check, Info, ShoppingBag, X } from 'lucide-react';
 import { useShop } from '../../lib/context/ShopContext';
 
-export const ToastContainer: React.FC = () => {
+type ToastPosition =
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'top-left'
+  | 'top-right'
+  | 'top-center'
+  | 'bottom-center';
+
+const positionClasses: Record<ToastPosition, string> = {
+  'bottom-left':   'bottom-6 left-6 items-start',
+  'bottom-right':  'bottom-6 right-6 items-end',
+  'top-left':      'top-6 left-6 items-start',
+  'top-right':     'top-6 right-6 items-end',
+  'top-center':    'top-6 left-1/2 -translate-x-1/2 items-center',
+  'bottom-center': 'bottom-6 left-1/2 -translate-x-1/2 items-center',
+};
+
+interface ToastContainerProps {
+  position?: ToastPosition;
+}
+
+export const ToastContainer: React.FC<ToastContainerProps> = ({
+  position = 'bottom-right',
+}) => {
   const { toasts, removeToast, setIsCartOpen } = useShop();
+  const cls = positionClasses[position];
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9990] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0">
+    <div className={`fixed z-9990 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0 ${cls}`}>
       <AnimatePresence>
         {toasts.map((toast) => (
           <motion.div
@@ -21,7 +45,7 @@ export const ToastContainer: React.FC = () => {
           >
             {/* Optional Image */}
             {toast.image ? (
-              <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-zinc-100 border border-zinc-200">
+              <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-zinc-100 border border-zinc-200">
                 <img
                   src={toast.image}
                   alt=""
@@ -31,7 +55,7 @@ export const ToastContainer: React.FC = () => {
               </div>
             ) : (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                   toast.type === 'cart'
                     ? 'bg-black text-white'
                     : toast.type === 'success'

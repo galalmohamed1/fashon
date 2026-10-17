@@ -53,23 +53,38 @@ export async function getLoggedUserCart(): Promise<
 
 export async function RemoveProduct(productId: string) {
   const token = await getAccessToken();
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/item/${productId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "content-type": "application/json",
+  if (!token) {
+    return { success: false, message: "Please login to remove items from your cart" };
+  }
+
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/item/${productId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "content-type": "application/json",
+        },
       },
-    },
-  );
-  if (res) {
-  console.log("remove item Ok");
-  return;
-}
-  const data = await res.json();
-  
-  return data;
+    );
+
+    if (!res.ok) {
+      let message = "Could not remove item";
+      try {
+        const errData = await res.json();
+        message = errData?.message ?? message;
+      } catch {
+        // ignore parse errors
+      }
+      return { success: false, message };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[RemoveProduct]", error);
+    return { success: false, message: "Could not remove item" };
+  }
 }
 
 export async function UpdateProductQuantity(

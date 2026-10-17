@@ -49,23 +49,14 @@ export const CartDrawer: React.FC = () => {
       if (result.valid) {
         if (result.discountType === 'fixed') {
           setAppliedCoupon(result.code, result.discount, 0);
-          addToast({
-            title: `PROMO CODE APPLIED: $${result.discount} OFF`,
-            type: 'success',
-          });
+          addToast({ title: `PROMO CODE APPLIED: $${result.discount} OFF`, type: 'success' });
         } else {
           setAppliedCoupon(result.code, 0, result.discount);
-          addToast({
-            title: `PROMO CODE APPLIED: ${result.discount}% OFF`,
-            type: 'success',
-          });
+          addToast({ title: `PROMO CODE APPLIED: ${result.discount}% OFF`, type: 'success' });
         }
         setPromoCode('');
       } else {
-        addToast({
-          title: 'INVALID PROMO CODE',
-          type: 'warning',
-        });
+        addToast({ title: 'INVALID PROMO CODE', type: 'warning' });
       }
     } finally {
       setIsApplyingPromo(false);

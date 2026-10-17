@@ -7,11 +7,11 @@ export * from './order';
 export * from './ui';
 export * from './wishlist';
 
-export interface ProductColor {
-  name: string;
-  hex: string;
-  border?: boolean;
-}
+// export interface ProductColor {
+//   name: string;
+//   hex: string;
+//   border?: boolean;
+// }
 
 export interface Review {
   id: string;

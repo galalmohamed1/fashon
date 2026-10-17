@@ -17,8 +17,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   showCategory = true
 }) => {
   const { openProductDetail, addToCart, toggleWishlist, isWishlisted } = useShop();
-  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: 'Default', hex: '#121214' });
-  const [selectedSize, setSelectedSize] = useState<string>('M');
+  const [selectedColor, setSelectedColor] = useState<ProductColor>(
+    product.color?.[0] ? { name: product.color[0].name, hex: product.color[0].hex } : { name: 'Default', hex: '#121214' }
+  );
+  const [selectedSize, setSelectedSize] = useState<string>(
+    product.size?.[0]?.name ?? 'M'
+  );
   const [isQuickAdding, setIsQuickAdding] = useState(false);
   const [showSizeSelector, setShowSizeSelector] = useState(false);
   const [addedRecently, setAddedRecently] = useState(false);
@@ -31,7 +35,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const originalPrice = hasDiscount ? product.price : undefined;
   const imageUrl = product.images?.[0]?.secure_url || '';
   const inStock = product.isActive && !product.isDeleted;
-  const availableSizes = ['S', 'M', 'L', 'XL'];
+  const availableSizes = (product.size ?? []).map((s) => s.name).length > 0
+    ? (product.size ?? []).map((s) => s.name)
+    : ['S', 'M', 'L', 'XL'];
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.stopPropagation();

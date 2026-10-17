@@ -44,21 +44,58 @@ export async function getProductByIdAdmin(
   }
 }
 
-/**
- * POST /api/products — create new product
- * Sends FormData (name, description, price, discountPrice, category, subCategory, images[])
- */
+export interface ProductPayload {
+  name: string;
+  description: string;
+  price: string;
+  stock: string;
+  discountPrice?: string;
+  category?: string;
+  subCategory?: string;
+  coupon?: string;
+  /** Available sizes, e.g. ["S","M","L"] */
+  sizes?: string[];
+  /** Available colors, e.g. ["Red","Blue"] */
+  colors?: string[];
+  /** base64 encoded image strings, e.g. "data:image/jpeg;base64,..." */
+  images?: string[];
+}
+
 export async function createProduct(
-  formData: FormData,
+  payload: ProductPayload,
 ): Promise<{ success: boolean; data?: Product; message?: string }> {
   try {
     const token = await getAccessToken();
 
+    const formData = new FormData();
+    formData.append("name", payload.name);
+    formData.append("description", payload.description);
+    formData.append("price", payload.price);
+    formData.append("stock", payload.stock);
+    if (payload.discountPrice) formData.append("discountPrice", payload.discountPrice);
+    if (payload.category) formData.append("category", payload.category);
+    if (payload.subCategory) formData.append("subCategory", payload.subCategory);
+    if (payload.coupon) formData.append("coupon", payload.coupon);
+    payload.sizes?.forEach((s) => formData.append("sizes", s));
+    payload.colors?.forEach((c) => formData.append("colors", c));
+
+    if (payload.images?.length) {
+      for (let i = 0; i < payload.images.length; i++) {
+        const base64 = payload.images[i];
+        const mimeMatch = base64.match(/data:([^;]+);base64,/);
+        const mime = mimeMatch?.[1] ?? "image/jpeg";
+        const ext = mime.split("/")[1] ?? "jpg";
+        const byteStr = atob(base64.split(",")[1]);
+        const bytes = new Uint8Array(byteStr.length);
+        for (let j = 0; j < byteStr.length; j++) bytes[j] = byteStr.charCodeAt(j);
+        const blob = new Blob([bytes], { type: mime });
+        formData.append("images", blob, `image_${i}.${ext}`);
+      }
+    }
+
     const res = await fetch(`${BASE}/products`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
       body: formData,
     });
 
@@ -67,41 +104,54 @@ export async function createProduct(
     console.log("CREATE PRODUCT RESPONSE:", responseText);
 
     let parsed: any;
-    try {
-      parsed = JSON.parse(responseText);
-    } catch {
-      parsed = null;
-    }
+    try { parsed = JSON.parse(responseText); } catch { parsed = null; }
 
     if (!res.ok) {
       console.error("CREATE PRODUCT ERROR:", responseText);
-      return {
-        success: false,
-        message: parsed?.message || "Failed to create product",
-      };
+      return { success: false, message: parsed?.message || "Failed to create product" };
     }
 
-    return {
-      success: true,
-      data: parsed?.data,
-      message: parsed?.message,
-    };
+    return { success: true, data: parsed?.data, message: parsed?.message };
   } catch (err) {
     console.error("[createProduct] ERROR:", err);
-    return {
-      success: false,
-      message: (err as Error).message || "An unexpected error occurred",
-    };
+    return { success: false, message: (err as Error).message || "An unexpected error occurred" };
   }
 }
 
 /** PUT /api/products/:id — update existing product */
 export async function updateProduct(
   id: string,
-  formData: FormData,
+  payload: ProductPayload,
 ): Promise<{ success: boolean; data?: Product; message?: string }> {
   try {
     const token = await getAccessToken();
+
+    const formData = new FormData();
+    formData.append("name", payload.name);
+    formData.append("description", payload.description);
+    formData.append("price", payload.price);
+    formData.append("stock", payload.stock);
+    if (payload.discountPrice) formData.append("discountPrice", payload.discountPrice);
+    if (payload.category) formData.append("category", payload.category);
+    if (payload.subCategory) formData.append("subCategory", payload.subCategory);
+    if (payload.coupon) formData.append("coupon", payload.coupon);
+    payload.sizes?.forEach((s) => formData.append("sizes", s));
+    payload.colors?.forEach((c) => formData.append("colors", c));
+
+    if (payload.images?.length) {
+      for (let i = 0; i < payload.images.length; i++) {
+        const base64 = payload.images[i];
+        const mimeMatch = base64.match(/data:([^;]+);base64,/);
+        const mime = mimeMatch?.[1] ?? "image/jpeg";
+        const ext = mime.split("/")[1] ?? "jpg";
+        const byteStr = atob(base64.split(",")[1]);
+        const bytes = new Uint8Array(byteStr.length);
+        for (let j = 0; j < byteStr.length; j++) bytes[j] = byteStr.charCodeAt(j);
+        const blob = new Blob([bytes], { type: mime });
+        formData.append("images", blob, `image_${i}.${ext}`);
+      }
+    }
+
     const res = await fetch(`${BASE}/products/${id}`, {
       method: "PUT",
       headers: { Authorization: `Bearer ${token}` },
@@ -110,34 +160,27 @@ export async function updateProduct(
 
     const responseText = await res.text();
     console.log("UPDATE PRODUCT STATUS:", res.status);
+    console.log(
+      "[updateProduct] payload keys:",
+      Object.keys(payload ?? {}),
+      "price:",
+      payload?.price,
+    );
+    console.log("[updateProduct] stock sent:", formData.get("stock"));
     console.log("UPDATE PRODUCT RESPONSE:", responseText);
 
     let parsed: any;
-    try {
-      parsed = JSON.parse(responseText);
-    } catch {
-      parsed = null;
-    }
+    try { parsed = JSON.parse(responseText); } catch { parsed = null; }
 
     if (!res.ok) {
       console.error("[updateProduct] Error:", responseText);
-      return {
-        success: false,
-        message: parsed?.message || "Failed to update product",
-      };
+      return { success: false, message: parsed?.message || "Failed to update product" };
     }
 
-    return {
-      success: true,
-      data: parsed?.data,
-      message: parsed?.message,
-    };
+    return { success: true, data: parsed?.data, message: parsed?.message };
   } catch (err) {
     console.error("[updateProduct] Error:", err);
-    return {
-      success: false,
-      message: (err as Error).message || "An unexpected error occurred",
-    };
+    return { success: false, message: (err as Error).message || "An unexpected error occurred" };
   }
 }
 

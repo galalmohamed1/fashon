@@ -8,11 +8,11 @@ import {
   ArrowLeft,
   CheckCircle2,
   ShoppingBag,
-  Gift
+  Gift,
+  Truck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useShop } from '../../../lib/context/ShopContext';
-
 import Link from 'next/link';
 import { addOrder } from '@/actions/checkout.actions';
 
@@ -45,7 +45,7 @@ export const CheckoutPage: React.FC = () => {
     cardNumber: '',
     cardExp: '',
     cardCvc: '',
-    paymentMethod: 'Instapay' as 'card' | 'apple' | 'Instapay',
+    paymentMethod: 'Instapay' as 'card' | 'apple' | 'Instapay' | 'Delivery',
   });
 
   const [deliveryMethod, setDeliveryMethod] = useState<'standard' | 'express'>('standard');
@@ -164,11 +164,7 @@ export const CheckoutPage: React.FC = () => {
       });
 
       if (!result.success) {
-        addToast({
-          title: 'ORDER FAILED',
-          message: result.message,
-          type: 'warning',
-        });
+        addToast({ title: 'ORDER FAILED', message: result.message, type: 'warning' });
         return;
       }
 
@@ -176,7 +172,7 @@ export const CheckoutPage: React.FC = () => {
       setOrderNumber(d?.orderNumber || d?.order?._id || d?._id || '');
       setOrderComplete(true);
       clearCoupon();
-      // clearCart(); // لو الباك إند مش بيفضي الكارت بنفسه
+      // clearCart();
 
       try {
         confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
@@ -622,7 +618,7 @@ export const CheckoutPage: React.FC = () => {
 
                 <div
                   // className="grid grid-cols-3 gap-2 mb-6"
-                  className="gap-2 mb-6"
+                  className="flex gap-2 mb-6"
                 >
                   {/* <button
                     type="button"
@@ -656,6 +652,17 @@ export const CheckoutPage: React.FC = () => {
                     }`}
                   >
                     INSTAPAY
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData((p) => ({ ...p, paymentMethod: 'Delivery' }))}
+                    className={`w-full py-3 rounded-xl border text-xs font-mono font-bold transition-all cursor-pointer ${
+                      formData.paymentMethod === 'Delivery'
+                        ? 'bg-black text-white border-black shadow-xs'
+                        : 'bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400'
+                    }`}
+                  >
+                    Cash By Delivery
                   </button>
                 </div>
 
@@ -736,6 +743,15 @@ export const CheckoutPage: React.FC = () => {
                         WhatsApp
                       </a>
                     </button>
+                  </div>
+                )}
+                {formData.paymentMethod === 'Delivery' && (
+                  <div className="p-6 rounded-xl bg-zinc-100 border border-zinc-200 text-center">
+                    <div className="p-6 rounded-xl bg-zinc-100 border border-zinc-200 text-center">
+                    <p className="text-xs font-mono text-zinc-700">
+                      You will pay in cash when your order is delivered. Please keep the exact amount ready.
+                    </p>
+                    </div>
                   </div>
                 )}
 
@@ -820,13 +836,18 @@ export const CheckoutPage: React.FC = () => {
                   <span>-${discountAmount.toFixed(2)}</span>
                 </div>
               )}
-
-              <div className="flex justify-between">
-                <span>SHIPPING</span>
-                <span className="text-black font-bold">
-                  {shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}
+              <div
+                className={`flex justify-between items-center font-bold ${
+                  shippingCost === 0 ? 'text-emerald-700' : 'text-zinc-700'
+                }`}
+              >
+                <span className="flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5" />
+                  DELIVERY
                 </span>
+                <span>{shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span>
               </div>
+
               <div className="flex justify-between">
                 <span>ESTIMATED SALES TAX</span>
                 <span className="text-black font-bold">${estimatedTax.toFixed(2)}</span>

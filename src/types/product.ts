@@ -7,7 +7,6 @@ export interface SubCategory {
   _id: string;
   name: string;
   slug: string;
-  /** Parent category — can be an ID string or a populated object */
   category?: string | { _id: string; name: string; slug: string } | null;
 }
 
@@ -19,10 +18,12 @@ export interface Product {
   price: number;
   discountPrice: number;
   images: ProductImage[];
-  category: null;
+  category: { _id: string; name: string; slug: string } | null;
   subCategory: SubCategory;
   averageRating: number;
   numReviews: number;
+  sizes: string[];
+  colors: string[];
   isFeatured: boolean;
   isActive: boolean;
   isDeleted: boolean;
@@ -30,6 +31,16 @@ export interface Product {
   updatedAt: string;
   stock: number;
   __v: number;
+}
+
+export interface ProductColor {
+  name: string;
+  hex?: string;
+  border?: boolean;
+}
+
+export interface ProductSize {
+  name: string;
 }
 
 export interface ProductsResponse {

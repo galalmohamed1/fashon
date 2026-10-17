@@ -10,7 +10,6 @@ import { CartDrawer } from '../components/features/cart/CartDrawer';
 import { Navbar } from '../components/layout/Navbar';
 import { Footer } from '../components/layout/Footer';
 import Providers from './providers/providers';
-import { Toaster } from 'sonner';
 import { RouteTransitionLoader } from '../components/ui/RouteTransitionLoader';
 
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
@@ -32,7 +31,7 @@ export default function RootLayout({
     <html lang="en" data-scroll-behavior="smooth" className={`scroll-smooth ${outfit.variable} ${spaceGrotesk.variable} ${syne.variable} ${jetBrainsMono.variable}`}>
       <body className="bg-white text-zinc-950 antialiased selection:bg-black selection:text-white min-h-screen flex flex-col overflow-x-hidden font-sans"cz-shortcut-listen="true">
         <Providers>
-          <ToastContainer />
+          <ToastContainer position="bottom-left" />
           <SearchModal />
           <SizeGuideModal />
           <CartDrawer />
@@ -41,13 +40,7 @@ export default function RootLayout({
           </Suspense>
           
           <Navbar />
-          <Toaster
-            position="bottom-right"
-            richColors
-            toastOptions={{
-              duration: 2500,
-            }}
-          />
+
           <main className="flex-1 w-full pt-16 sm:pt-20">
             {children}
           </main>

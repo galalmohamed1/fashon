@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { useShop } from '../../../lib/context/ShopContext';
 import { REVIEWS_DATA } from '../../../lib/data/products';
-import { Product, ProductColor } from '../../../types';
+import { Product, ProductColor, ProductSize } from '../../../types';
 import { getSingelProdect } from '@/app/api/services/prodect.services';
 import img from '../../../assets/kiikii-tshirt.png';
 
@@ -26,6 +26,31 @@ import { ProductCard } from '../../shared/ProductCard';
 import { TShirtPhoto } from './TShirt3D';
 import Link from 'next/link';
 import { LiquidLogoLoader } from '../../ui/LiquidLogoLoader';
+
+// ── Utility: color name → hex mapping ───────────────────────────────────────
+const COLOR_HEX_MAP: Record<string, string> = {
+  black: '#121214', white: '#F5F5F7', offwhite: '#F5F5F7', purewhite: '#F5F5F7',
+  gray: '#71717A', grey: '#71717A', mineralgray: '#52525B', mineralgrey: '#52525B',
+  red: '#EF4444', darkred: '#991B1B', burgundy: '#7F1D1D', wine: '#7F1D1D',
+  blue: '#3B82F6', navyblue: '#1E3A5F', navy: '#1E3A5F', skyblue: '#38BDF8',
+  green: '#22C55E', darkgreen: '#166534', olive: '#84834B', khaki: '#C3B091',
+  yellow: '#FBBF24', mustard: '#D4A017', orange: '#F97316', coral: '#F87171',
+  pink: '#F472B6', hotpink: '#EC4899', purple: '#A855F7', lavender: '#DDD6FE',
+  brown: '#92400E', caramel: '#D4900A', beige: '#F5F0E8', cream: '#FFFBF0',
+  gold: '#D4AF37', silver: '#C0C0C0', bronze: '#CD7F32',
+};
+
+const nameToHex = (name: string): string => {
+  const lower = name.toLowerCase().replace(/\s+/g, '');
+  return COLOR_HEX_MAP[lower] ?? '#A1A1AA';
+};
+
+const isLightColor = (hex: string): boolean => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 200;
+};
 
 export const ProductDetailPage: React.FC = () => {
   const params = useParams();
@@ -46,8 +71,8 @@ export const ProductDetailPage: React.FC = () => {
 
   // Component State
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: 'Mineral Gray', hex: '#52525B' });
-  const [selectedSize, setSelectedSize] = useState<string>('M');
+  const [selectedColor, setSelectedColor] = useState<ProductColor>({ name: ' ', hex: '#121214' });
+  const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [activeAccordion, setActiveAccordion] = useState<string | null>('materials');
   const [view3DMode, setView3DMode] = useState(false);
@@ -81,6 +106,18 @@ export const ProductDetailPage: React.FC = () => {
     };
   }, [currentId, products]);
 
+  // Initialize selectedSize and selectedColor once product loads
+  useEffect(() => {
+  if (!product) return;
+  if (product.sizes?.length) setSelectedSize(product.sizes[0]);
+  if (product.colors?.length) {
+    const name = product.colors[0];
+    const hex = nameToHex(name);
+    setSelectedColor({ name, hex, border: isLightColor(hex) });
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [product?._id]);
+  
   if (loading && !product) {
     return (
       <div className="min-h-screen pt-28 pb-24 bg-white flex items-center justify-center">
@@ -117,12 +154,13 @@ export const ProductDetailPage: React.FC = () => {
   const currentPrice = hasDiscount ? product.discountPrice : product.price;
   const originalPrice = hasDiscount ? product.price : undefined;
 
-  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const availableColors: ProductColor[] = [
-    { name: 'Obsidian Black', hex: '#121214' },
-    { name: 'Pure White', hex: '#F5F5F7', border: true },
-    { name: 'Mineral Gray', hex: '#52525B' }
-  ];
+  // ── Map color name strings → ProductColor objects ──────────────────────────
+  const availableColors: ProductColor[] = (product.colors ?? []).map((name) => {
+  const hex = nameToHex(name);
+  return { name, hex, border: isLightColor(hex) };
+});
+
+const availableSizes: string[] = product.sizes ?? [];
 
   // Related products from API products
   const relatedProducts = products.filter((p) => p._id !== product._id).slice(0, 3);
@@ -204,7 +242,7 @@ export const ProductDetailPage: React.FC = () => {
                 <TShirtPhoto src={img.src} />
               </div>
             ) : (
-              <div className="relative aspect-[3/4] w-full max-w-md mx-auto rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-lg group">
+              <div className="relative aspect-3/4 w-full max-w-md mx-auto rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-lg group">
                 {gallery.length > 0 ? (
                   <img
                     src={gallery[activeImageIndex] || gallery[0]}
@@ -282,9 +320,13 @@ export const ProductDetailPage: React.FC = () => {
                 <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
                 {product.subCategory?.name || 'ARCHIVE'}
               </span>
-              {product.isActive && (
+              {product.isActive && product.stock > 0 ? (
                 <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
                   IN STOCK
+                </span>
+              ) : (
+                <span className="text-red-700 bg-red-50 px-2 py-0.5 rounded border border-red-200 font-bold">
+                  OUT OF STOCK
                 </span>
               )}
             </div>
@@ -337,70 +379,74 @@ export const ProductDetailPage: React.FC = () => {
             </p>
 
             {/* COLOR SELECTOR */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider mb-3">
-                <span className="text-zinc-500 font-medium">
-                  COLOR: <strong className="text-black font-bold">{selectedColor.name}</strong>
-                </span>
+            {availableColors.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider mb-3">
+                  <span className="text-zinc-500 font-medium">
+                    COLOR: <strong className="text-black font-bold">{selectedColor.name}</strong>
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-3">
+                  {availableColors.map((color) => {
+                    const isSelected = selectedColor.name === color.name;
+                    return (
+                      <button
+                        key={color.name}
+                        onClick={() => setSelectedColor(color)}
+                        className={`group relative flex items-center gap-2 p-1.5 pr-3 rounded-full border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'border-black bg-zinc-100 shadow-xs'
+                            : 'border-zinc-200 bg-white hover:border-zinc-400'
+                        }`}
+                      >
+                        <span
+                          className={`w-5 h-5 rounded-full ${color.border ? 'border border-zinc-400' : ''}`}
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <span className="text-xs font-mono text-zinc-800 font-medium">
+                          {color.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                {availableColors.map((color) => {
-                  const isSelected = selectedColor.name === color.name;
-                  return (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color)}
-                      className={`group relative flex items-center gap-2 p-1.5 pr-3 rounded-full border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'border-black bg-zinc-100 shadow-xs'
-                          : 'border-zinc-200 bg-white hover:border-zinc-400'
-                      }`}
-                    >
-                      <span
-                        className={`w-5 h-5 rounded-full ${color.border ? 'border border-zinc-400' : ''}`}
-                        style={{ backgroundColor: color.hex }}
-                      />
-                      <span className="text-xs font-mono text-zinc-800 font-medium">
-                        {color.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
 
             {/* SIZE SELECTOR + SIZE GUIDE TRIGGER */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider mb-3">
-                <span className="text-zinc-500 font-medium">
-                  SELECT SIZE: <strong className="text-black font-bold">{selectedSize}</strong>
-                </span>
-                <button
-                  onClick={() => setIsSizeGuideOpen(true)}
-                  className="text-xs font-mono text-zinc-600 hover:text-black flex items-center gap-1 underline font-bold cursor-pointer"
-                >
-                  <Ruler className="w-3.5 h-3.5" /> SIZE GUIDE
-                </button>
+            {availableSizes.length > 0 && (
+              <div className="mb-8">
+                <div className="flex items-center justify-between text-xs font-mono uppercase tracking-wider mb-3">
+                  <span className="text-zinc-500 font-medium">
+                    SELECT SIZE: <strong className="text-black font-bold">{selectedSize || availableSizes[0]}</strong>
+                  </span>
+                  <button
+                    onClick={() => setIsSizeGuideOpen(true)}
+                    className="text-xs font-mono text-zinc-600 hover:text-black flex items-center gap-1 underline font-bold cursor-pointer"
+                  >
+                    <Ruler className="w-3.5 h-3.5" /> SIZE GUIDE
+                  </button>
+                </div>
+                <div className="grid grid-cols-6 gap-2">
+                  {availableSizes.map((size) => {
+                    const isSelected = (selectedSize || availableSizes[0]) === size;
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`py-3 text-xs font-mono font-bold rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-black text-white border-black shadow-md'
+                            : 'bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100 hover:border-zinc-400'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="grid grid-cols-6 gap-2">
-                {availableSizes.map((size) => {
-                  const isSelected = selectedSize === size;
-                  return (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`py-3 text-xs font-mono font-bold rounded-xl border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-black text-white border-black shadow-md'
-                          : 'bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100 hover:border-zinc-400'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            )}
 
             {/* QUANTITY & ACTIONS */}
             <div className="flex flex-col gap-3 mb-8">
