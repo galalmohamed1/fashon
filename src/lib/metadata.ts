@@ -14,6 +14,13 @@ export function buildMetadata(overrides: Partial<Metadata> & { title?: string })
     title,
     description:
       'Premium modern fashion e-commerce brand featuring interactive 3D apparel and futuristic streetwear.',
+    icons: {
+      icon: [
+        { url: '/icon.svg', type: 'image/svg+xml' },
+      ],
+      shortcut: '/icon.svg',
+      apple: '/icon.svg',
+    },
     openGraph: {
       type: 'website',
       siteName: SITE_NAME,

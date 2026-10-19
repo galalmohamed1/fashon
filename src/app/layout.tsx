@@ -20,6 +20,13 @@ const jetBrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jet
 export const metadata: Metadata = {
   title: 'GM — Luxury Futuristic Streetwear',
   description: 'Premium modern fashion e-commerce brand featuring interactive 3D apparel, futuristic streetwear collections, and high-end editorial curation.',
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

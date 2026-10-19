@@ -20,7 +20,7 @@ export async function compressImage(
 
         const ctx = canvas.getContext("2d");
         if (!ctx) {
-          resolve(file); // لو حصل مشكلة، ابعت الأصلي بدل ما تفشل العملية كلها
+          resolve(file); 
           return;
         }
 
