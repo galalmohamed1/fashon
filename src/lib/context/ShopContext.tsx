@@ -70,8 +70,8 @@ interface ShopContextType {
     customColorHex?: string
   ) => Promise<boolean>;
 
-  removeFromCart: (itemId: string) => Promise<void>;
-  updateQuantity: (itemId: string, delta: number) => Promise<void>;
+  removeFromCart: (itemId: string,size:string,color:string) => Promise<void>;
+  updateQuantity: (itemId: string, delta: number,size:string,color:string) => Promise<void>;
   updatingItemId: string | null;
 
   refreshCart: () => Promise<void>;
@@ -391,9 +391,9 @@ const refreshWishlist = useCallback(async () => {
   // Remove From Cart
   // =========================
 
-  const removeFromCart = async (itemId: string) => {
+  const removeFromCart = async (itemId: string,size:string,color:string) => {
   try {
-    const response = await RemoveProduct(itemId);
+    const response = await RemoveProduct(itemId,size,color);
     if (!response?.success) {
       addToast({
         title: "Could not remove item",
@@ -417,7 +417,7 @@ const refreshWishlist = useCallback(async () => {
 
   const [updatingItemId, setUpdatingItemId] = useState<string | null>(null);
 
-const updateQuantity = async (itemId: string, delta: number) => {
+const updateQuantity = async (itemId: string, delta: number, size:string,color:string) => {
   if (!cartId) return; 
 
   // Find the current item to calculate new quantity
@@ -431,7 +431,7 @@ const updateQuantity = async (itemId: string, delta: number) => {
 
   setUpdatingItemId(itemId);
   try {
-    const response = await UpdateProductQuantity(cartId, itemId, newQty);
+    const response = await UpdateProductQuantity(cartId, itemId, newQty,size,color);
 
     if (!response?.success) {
       addToast({

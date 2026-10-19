@@ -51,7 +51,7 @@ export async function getLoggedUserCart(): Promise<
   }
 }
 
-export async function RemoveProduct(productId: string) {
+export async function RemoveProduct(productId: string, size?: string, color?: string) {
   const token = await getAccessToken();
   if (!token) {
     return { success: false, message: "Please login to remove items from your cart" };
@@ -59,7 +59,7 @@ export async function RemoveProduct(productId: string) {
 
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/item/${productId}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/item/${productId}?size=${size}&color=${color}`,
       {
         method: "DELETE",
         headers: {
@@ -74,8 +74,9 @@ export async function RemoveProduct(productId: string) {
       try {
         const errData = await res.json();
         message = errData?.message ?? message;
-      } catch {
-        // ignore parse errors
+      } catch (error) {
+          console.error("[RemoveProduct]", error);
+        
       }
       return { success: false, message };
     }
@@ -91,6 +92,8 @@ export async function UpdateProductQuantity(
   cartId: string,
   productId: string,
   quantity: number,
+  size?: string,
+  color?: string,
 ) {
   const token = await getAccessToken();
 
@@ -100,14 +103,14 @@ export async function UpdateProductQuantity(
 
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/${cartId}`, 
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/cart/${cartId}`,
       {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ productId, quantity }), 
+        body: JSON.stringify({ productId, quantity, size, color }),
       },
     );
     const data = await res.json();

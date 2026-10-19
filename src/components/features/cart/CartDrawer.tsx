@@ -214,7 +214,10 @@ export const CartDrawer: React.FC = () => {
                             {item.product.name}
                           </h4>
                           <button
-                            onClick={() => removeFromCart(item.product._id)}
+                            onClick={() => {
+                              removeFromCart(item.product._id,item.size, item.color)
+                              
+                            }}
                             className="text-zinc-400 hover:text-red-600 transition-colors p-1 cursor-pointer"
                             title="Remove item"
                           >
@@ -253,7 +256,7 @@ export const CartDrawer: React.FC = () => {
                       <div className="flex items-center justify-between mt-3">
                         <div className="flex items-center border border-zinc-300 rounded-lg bg-white">
                           <button
-                            onClick={() => updateQuantity(item.product._id, -1)}
+                            onClick={() => updateQuantity(item.product._id, -1,item.size, item.color)}
                             disabled={updatingItemId === item.product._id || item.quantity <= 1}
                             className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer disabled:opacity-40" 
                             aria-label="Decrease quantity"
@@ -268,7 +271,7 @@ export const CartDrawer: React.FC = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => updateQuantity(item.product._id, 1)}
+                            onClick={() => updateQuantity(item.product._id, 1,item.size, item.color)}
                             disabled={updatingItemId === item.product._id}
                             className="p-1 text-zinc-600 hover:text-black transition-colors cursor-pointer disabled:opacity-40  "
                             aria-label="Increase quantity"
