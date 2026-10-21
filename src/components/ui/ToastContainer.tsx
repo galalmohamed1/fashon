@@ -41,11 +41,11 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="pointer-events-auto flex items-center gap-3 p-3.5 rounded-2xl bg-white border border-zinc-200 shadow-2xl backdrop-blur-xl text-black"
+            className="pointer-events-auto flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#18181b] border border-zinc-200 dark:border-zinc-800 shadow-2xl backdrop-blur-xl text-black dark:text-white"
           >
             {/* Optional Image */}
             {toast.image ? (
-              <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-zinc-100 border border-zinc-200">
+              <div className="w-11 h-11 rounded-lg overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
                 <img
                   src={toast.image}
                   alt=""
@@ -57,10 +57,10 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
               <div
                 className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                   toast.type === 'cart'
-                    ? 'bg-black text-white'
+                    ? 'bg-black text-white dark:bg-white dark:text-black'
                     : toast.type === 'success'
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-zinc-100 text-black border border-zinc-200'
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                    : 'bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white border border-zinc-200 dark:border-zinc-700'
                 }`}
               >
                 {toast.type === 'cart' ? (
@@ -75,11 +75,11 @@ export const ToastContainer: React.FC<ToastContainerProps> = ({
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold tracking-wide text-black uppercase">
+              <p className="text-xs font-bold tracking-wide text-black dark:text-white uppercase">
                 {toast.title}
               </p>
               {toast.message && (
-                <p className="text-[11px] text-zinc-600 truncate mt-0.5 font-mono font-medium">
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 truncate mt-0.5 font-mono font-medium">
                   {toast.message}
                 </p>
               )}

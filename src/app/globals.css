@@ -1,18 +1,63 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --font-display: 'Syne', sans-serif;
     --font-sans: 'Outfit', sans-serif;
     --font-heading: 'Space Grotesk', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
+
+    --background: #ffffff;
+    --foreground: #09090b;
+    --card: #ffffff;
+    --card-foreground: #09090b;
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+    --primary: #09090b;
+    --primary-foreground: #fafafa;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+  }
+
+  .dark {
+    --background: #09090b;
+    --foreground: #f4f4f5;
+    --card: #111114;
+    --card-foreground: #f4f4f5;
+    --popover: #111114;
+    --popover-foreground: #f4f4f5;
+    --primary: #f4f4f5;
+    --primary-foreground: #09090b;
+    --secondary: #1f1f23;
+    --secondary-foreground: #f4f4f5;
+    --muted: #1f1f23;
+    --muted-foreground: #a1a1aa;
+    --accent: #1f1f23;
+    --accent-foreground: #f4f4f5;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafafa;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #d4d4d8;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #ffffff;
-    color: #09090b;
+    background-color: var(--background);
+    color: var(--foreground);
     overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   /* Allow page scroll even when a dropdown/menu is open */
@@ -36,6 +81,204 @@
   }
 }
 
+/* ============================================================
+   DARK MODE ARCHITECTURAL OVERRIDES (GM LUXURY STREETWEAR)
+   ============================================================ */
+.dark {
+  color-scheme: dark;
+}
+
+.dark body {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+/* Surfaces & Backgrounds */
+.dark .bg-white {
+  background-color: #111114 !important;
+}
+
+.dark .bg-zinc-50,
+.dark .bg-gray-50 {
+  background-color: #09090b !important;
+}
+
+.dark .bg-zinc-100,
+.dark .bg-gray-100 {
+  background-color: #18181b !important;
+}
+
+.dark .bg-zinc-200,
+.dark .bg-gray-200 {
+  background-color: #27272a !important;
+}
+
+.dark .bg-\[\#f2f0f0\] {
+  background-color: #0c0c0e !important;
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(17, 17, 20, 0.85) !important;
+}
+
+.dark .bg-white\/90 {
+  background-color: rgba(17, 17, 20, 0.92) !important;
+}
+
+.dark .bg-white\/95 {
+  background-color: rgba(17, 17, 20, 0.96) !important;
+}
+
+/* Text Colors */
+.dark .text-black,
+.dark .text-zinc-950,
+.dark .text-zinc-900,
+.dark .text-gray-900,
+.dark .text-gray-800 {
+  color: #f4f4f5 !important;
+}
+
+.dark .text-zinc-700,
+.dark .text-zinc-600,
+.dark .text-gray-700,
+.dark .text-gray-600 {
+  color: #a1a1aa !important;
+}
+
+.dark .text-zinc-500,
+.dark .text-gray-500 {
+  color: #71717a !important;
+}
+
+.dark .text-zinc-400,
+.dark .text-gray-400 {
+  color: #52525b !important;
+}
+
+/* Hover text adjustments */
+.dark .hover\:text-black:hover,
+.dark .hover\:text-zinc-900:hover,
+.dark .hover\:text-gray-900:hover {
+  color: #ffffff !important;
+}
+
+.dark .hover\:bg-zinc-100:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: #27272a !important;
+}
+
+.dark .hover\:bg-zinc-200:hover,
+.dark .hover\:bg-gray-200:hover {
+  background-color: #3f3f46 !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: #18181b !important;
+}
+
+/* Borders */
+.dark .border-zinc-100,
+.dark .border-zinc-200,
+.dark .border-zinc-300,
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: #27272a !important;
+}
+
+.dark .border-zinc-200\/80 {
+  border-color: rgba(39, 39, 42, 0.8) !important;
+}
+
+.dark .border-black {
+  border-color: #3f3f46 !important;
+}
+
+.dark .hover\:border-black:hover {
+  border-color: #a1a1aa !important;
+}
+
+.dark .focus\:border-black:focus,
+.dark .focus-within\:border-black:focus-within {
+  border-color: #ffffff !important;
+}
+
+/* Luxury inverted primary buttons */
+.dark button.bg-black:not([data-keep-black]),
+.dark a.bg-black:not([data-keep-black]),
+.dark input[type="submit"].bg-black {
+  background-color: #ffffff !important;
+  color: #09090b !important;
+}
+
+.dark button.bg-black:not([data-keep-black]) svg,
+.dark a.bg-black:not([data-keep-black]) svg {
+  color: #09090b !important;
+}
+
+.dark button.bg-black:not([data-keep-black]):hover,
+.dark a.bg-black:not([data-keep-black]):hover {
+  background-color: #e4e4e7 !important;
+}
+
+/* Input Fields & Textareas */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+.dark textarea,
+.dark select {
+  background-color: #141418 !important;
+  color: #f4f4f5 !important;
+  border-color: #27272a !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #71717a !important;
+}
+
+.dark select option {
+  background-color: #141418 !important;
+  color: #f4f4f5 !important;
+}
+
+/* Dropdown menus & popovers */
+.dark [role="menu"],
+.dark [role="dialog"],
+.dark .dropdown-content {
+  background-color: #141418 !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+/* Glass Panels & Navigation */
+.dark .glass-nav {
+  background: rgba(9, 9, 11, 0.9) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark .glass-panel {
+  background: rgba(17, 17, 20, 0.88) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Active Nav Indicator */
+.dark [layoutId="activeNavIndicator"] {
+  background-color: #ffffff !important;
+}
+
+/* Sale Badge: Inverts background and text color cleanly in dark mode */
+.badge-sale {
+  background-color: #09090b !important;
+  color: #ffffff !important;
+}
+.dark .badge-sale {
+  background-color: #09090b !important;
+  color: #ffffff !important;
+}
+
+.dark .dark-text-color{
+  color:#ffffff !important
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -53,6 +296,18 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a1a1aa;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #09090b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #27272a;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
 
 /* Marquee infinite scroll */

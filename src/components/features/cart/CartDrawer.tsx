@@ -87,13 +87,13 @@ export const CartDrawer: React.FC = () => {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="absolute inset-y-0 right-0 max-w-md w-full bg-white border-l border-zinc-200 shadow-2xl flex flex-col justify-between"
+            className="absolute inset-y-0 right-0 max-w-md w-full bg-white dark:bg-[#111114] border-l border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col justify-between text-black dark:text-white"
           >
             {/* Drawer Header */}
-            <div className="p-5 sm:p-6 border-b border-zinc-200 flex items-center justify-between">
+            <div className="p-5 sm:p-6 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-black" />
-                <h3 className="font-display font-black text-xs text-black uppercase tracking-wide">
+                <ShoppingBag className="w-5 h-5 text-black dark:text-white" />
+                <h3 className="font-display font-black text-xs text-black dark:text-white uppercase tracking-wide">
                   SHOPPING BAG ({cartCount})
                 </h3>
               </div>
@@ -134,7 +134,7 @@ export const CartDrawer: React.FC = () => {
                 )} */}
                 <button
                   onClick={() => { setIsCartOpen(false); setConfirmClear(false); }}
-                  className="p-2 rounded-full text-zinc-500 hover:text-black hover:bg-zinc-100 transition-colors cursor-pointer"
+                  className="p-2 rounded-full text-zinc-500 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                   aria-label="Close bag"
                 >
                   <X className="w-5 h-5" />

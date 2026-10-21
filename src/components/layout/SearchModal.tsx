@@ -55,9 +55,9 @@ export const SearchModal: React.FC = () => {
           className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-12"
         >
           {/* Main Card */}
-          <div className="bg-white border border-zinc-200 rounded-3xl p-6 sm:p-8 shadow-2xl">
+          <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
             {/* Top Bar with Input */}
-            <div className="relative flex items-center border-b-2 border-zinc-200 focus-within:border-black transition-colors pb-3">
+            <div className="relative flex items-center border-b-2 border-zinc-200 dark:border-zinc-800 focus-within:border-black dark:focus-within:border-white transition-colors pb-3">
               <Search className="w-6 h-6 text-zinc-400 mr-3 flex-shrink-0" />
               <input
                 type="text"
@@ -65,12 +65,12 @@ export const SearchModal: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="SEARCH PIECES, COLLECTIONS, TECH WEAR..."
                 autoFocus
-                className="w-full bg-transparent text-lg sm:text-2xl uppercase tracking-wider text-black placeholder:text-zinc-400 focus:outline-none font-display font-black"
+                className="w-full bg-transparent text-lg sm:text-2xl uppercase tracking-wider text-black dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none font-display font-black"
               />
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm('')}
-                  className="p-1 text-zinc-400 hover:text-black mr-2 cursor-pointer"
+                  className="p-1 text-zinc-400 hover:text-black dark:hover:text-white mr-2 cursor-pointer"
                   aria-label="Clear search text"
                 >
                   <X className="w-5 h-5" />
@@ -78,7 +78,7 @@ export const SearchModal: React.FC = () => {
               )}
               <button
                 onClick={() => setIsSearchOpen(false)}
-                className="px-3 py-1.5 text-xs font-mono tracking-widest text-zinc-600 hover:text-black border border-zinc-300 rounded-lg hover:border-black transition-all uppercase font-bold cursor-pointer"
+                className="px-3 py-1.5 text-xs font-mono tracking-widest text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white border border-zinc-300 dark:border-zinc-700 rounded-lg hover:border-black dark:hover:border-white transition-all uppercase font-bold cursor-pointer"
               >
                 ESC
               </button>
@@ -93,7 +93,7 @@ export const SearchModal: React.FC = () => {
                 <button
                   key={tag}
                   onClick={() => handleTagClick(tag)}
-                  className="px-3 py-1 text-xs font-mono font-medium rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 hover:text-black hover:bg-zinc-200 hover:border-zinc-400 transition-all cursor-pointer"
+                  className="px-3 py-1 text-xs font-mono font-medium rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 hover:border-zinc-400 transition-all cursor-pointer"
                 >
                   {tag}
                 </button>

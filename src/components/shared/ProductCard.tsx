@@ -120,7 +120,7 @@ const [selectedSize, setSelectedSize] = useState<string>(
             </span>
           )}
           {hasDiscount && (
-            <span className="px-2.5 py-1 text-[9px] font-mono font-bold tracking-widest uppercase rounded bg-black text-white shadow-xs">
+            <span className="badge-sale px-2.5 py-1 text-[9px] font-mono font-bold tracking-widest uppercase rounded shadow-xs transition-colors duration-200">
               SALE
             </span>
           )}
@@ -194,7 +194,7 @@ const [selectedSize, setSelectedSize] = useState<string>(
                             className={`w-4 h-4 rounded-full ${color.border ? 'border border-zinc-400' : ''}`}
                             style={{ backgroundColor: color.hex }}
                           />
-                          <span className="text-[10px] font-mono text-zinc-800 font-medium">
+                          <span className="dark-text-color text-[10px] font-mono text-zinc-800 font-medium">
                             {color.name}
                           </span>
                         </button>

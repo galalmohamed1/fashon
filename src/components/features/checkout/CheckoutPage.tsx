@@ -186,11 +186,11 @@ export const CheckoutPage: React.FC = () => {
 
   if (orderComplete) {
     return (
-      <div className="min-h-screen pt-8 pb-24 bg-white flex items-center justify-center px-4">
+      <div className="min-h-screen pt-8 pb-24 bg-white dark:bg-[#09090b] text-black dark:text-white flex items-center justify-center px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-xl w-full p-8 sm:p-10 rounded-3xl bg-zinc-50 border border-zinc-200 text-center shadow-2xl"
+          className="max-w-xl w-full p-8 sm:p-10 rounded-3xl bg-zinc-50 dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800 text-center shadow-2xl"
         >
           <div className="w-20 h-20 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-700 flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10" />
@@ -228,10 +228,10 @@ export const CheckoutPage: React.FC = () => {
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-screen pt-32 pb-24 bg-white flex items-center justify-center px-4">
+      <div className="min-h-screen pt-32 pb-24 bg-white dark:bg-[#09090b] text-black dark:text-white flex items-center justify-center px-4">
         <div className="text-center max-w-md">
-          <ShoppingBag className="w-16 h-16 text-zinc-400 mx-auto mb-4" />
-          <h2 className="font-display font-black text-2xl text-black uppercase">
+          <ShoppingBag className="w-16 h-16 text-zinc-400 dark:text-zinc-600 mx-auto mb-4" />
+          <h2 className="font-display font-black text-2xl text-black dark:text-white uppercase">
             YOUR BAG IS EMPTY
           </h2>
           <p className="text-xs font-mono text-zinc-600 mt-2 mb-6">
@@ -249,7 +249,7 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen pt-18 sm:pt-18 pb-18 bg-white">
+    <div className="min-h-screen pt-18 sm:pt-18 pb-18 bg-white dark:bg-[#09090b] text-black dark:text-white transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Back Link */}

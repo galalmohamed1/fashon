@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, ShoppingBag, Heart, Menu, X, ArrowRight, User } from 'lucide-react';
 import { useShop } from '../../lib/context/ShopContext';
 import { GMLogo } from '../ui/GMLogo';
+import { ThemeToggle } from '../ui/ThemeToggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -124,11 +125,14 @@ export const Navbar: React.FC = () => {
   </div>
 
   {/* Right: Action Icons */}
-  <div className="flex items-center gap-1.5 sm:gap-3">
+  <div className="flex items-center gap-1.5 sm:gap-2.5">
+    {/* Theme Toggle Button */}
+    <ThemeToggle />
+
     {/* Search Trigger */}
     <button
       onClick={() => setIsSearchOpen(true)}
-      className="p-2 sm:p-2.5 text-zinc-700 hover:text-black cursor-pointer rounded-full hover:bg-zinc-100 transition-colors"
+      className="p-2 sm:p-2.5 text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white cursor-pointer rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
       aria-label="Search collection"
       title="Search (⌘K)"
     >
@@ -187,17 +191,17 @@ export const Navbar: React.FC = () => {
                         <FaRegUserCircle className="text-xl text-gray-500 group-hover:text-green-600 transition-colors" />
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 bg-white">
+                    <DropdownMenuContent align="end" className="w-64 bg-white dark:bg-[#141418] border border-zinc-200 dark:border-zinc-800 shadow-xl">
                       <DropdownMenuGroup>
-                        <DropdownMenuLabel className="flex items-center gap-3 p-4 border-b mb-1 border-gray-100">
-                          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                            <FaRegUserCircle className="text-xl text-green-600" />
+                        <DropdownMenuLabel className="flex items-center gap-3 p-4 border-b mb-1 border-gray-100 dark:border-zinc-800">
+                          <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                            <FaRegUserCircle className="text-xl text-zinc-900 dark:text-zinc-100" />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 truncate">
+                            <p className="text-sm font-semibold text-gray-800 dark:text-zinc-100 truncate">
                               {myData?.user?.name}
                             </p>
-                            <p className="text-xs font-medium text-gray-500 truncate">
+                            <p className="text-xs font-medium text-gray-500 dark:text-zinc-400 truncate">
                               {myData?.user?.email}
                             </p>
                           </div>
@@ -205,65 +209,65 @@ export const Navbar: React.FC = () => {
                         {(myData?.user as any)?.role === 'admin' && (
                           <DropdownMenuItem>
                             <Link
-                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-black bg-zinc-100 hover:bg-zinc-200 transition-colors rounded"
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-black dark:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors rounded"
                               href="/dashboard"
                             >
-                              <ShieldAlert className="w-4 text-black" />
+                              <ShieldAlert className="w-4 text-black dark:text-white" />
                               Admin Dashboard
                             </Link>
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuItem>
                           <Link
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                             href="/profile"
                           >
-                            <FiUser className="w-4 text-gray-400" />
+                            <FiUser className="w-4 text-gray-400 dark:text-zinc-500" />
                             My Profile
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <button
-                            className="w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            className="w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                             onClick={() => setIsCartOpen(true)}
                           >
-                            <FaBoxOpen className="w-4 text-gray-400" />
+                            <FaBoxOpen className="w-4 text-gray-400 dark:text-zinc-500" />
                             My Orders
                           </button>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Link
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                             href="/wishlist"
                           >
-                            <FaRegHeart className="w-4 text-gray-400" />
+                            <FaRegHeart className="w-4 text-gray-400 dark:text-zinc-500" />
                             My Wishlist
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Link
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                             href="/profile/address"
                           >
-                            <FaRegAddressBook className="w-4 text-gray-400" />
+                            <FaRegAddressBook className="w-4 text-gray-400 dark:text-zinc-500" />
                             Addresses
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem>
                           <Link
-                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 hover:text-green-600 hover:bg-green-50 transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-600 dark:text-zinc-300 hover:text-black dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                             href="/profile/settings"
                           >
-                            <IoMdSettings className="w-4 text-gray-400" />
+                            <IoMdSettings className="w-4 text-gray-400 dark:text-zinc-500" />
                             Settings
                           </Link>
                         </DropdownMenuItem>
                       </DropdownMenuGroup>
-                      <DropdownMenuSeparator />
+                      <DropdownMenuSeparator className="bg-zinc-100 dark:bg-zinc-800" />
                       <DropdownMenuItem>
                         <div
                           onClick={mySignOut}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:text-red-500 hover:bg-red-50 transition-colors w-full text-left cursor-pointer"
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors w-full text-left cursor-pointer"
                         >
                           <FaRightFromBracket className="text-xs" />
                           <span>Sign Out</span>
@@ -294,10 +298,10 @@ export const Navbar: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-9999 bg-white flex flex-col justify-between p-6 sm:p-8"
+            className="fixed inset-0 z-9999 bg-white dark:bg-[#09090b] text-black dark:text-white flex flex-col justify-between p-6 sm:p-8"
           >
             {/* Header with Close */}
-            <div className="flex items-center justify-between pb-6 border-b border-zinc-200">
+            <div className="flex items-center justify-between pb-6 border-b border-zinc-200 dark:border-zinc-800">
               <Link
                 href='/'
                 className="text-left"
@@ -306,7 +310,7 @@ export const Navbar: React.FC = () => {
               </Link>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2.5 rounded-full bg-zinc-100 border border-zinc-200 text-black hover:bg-zinc-200 transition-colors"
+                className="p-2.5 rounded-full bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-black dark:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
@@ -326,22 +330,35 @@ export const Navbar: React.FC = () => {
                     href={link.page}
                     className="group flex items-center justify-between w-full text-left"
                   >
-                    <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-zinc-800 group-hover:text-black group-hover:translate-x-2 transition-all duration-200">
+                    <span className="font-display text-3xl sm:text-4xl font-black tracking-tight text-zinc-800 dark:text-zinc-200 group-hover:text-black dark:group-hover:text-white group-hover:translate-x-2 transition-all duration-200">
                       {link.label}
                     </span>
-                    <ArrowRight className="w-6 h-6 text-zinc-400 group-hover:text-black group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="w-6 h-6 text-zinc-400 group-hover:text-black dark:group-hover:text-white group-hover:translate-x-1 transition-all" />
                   </Link>
                 </motion.div>
               ))}
             </div>
 
+            {/* Mobile Theme Switcher */}
+            <div className="mb-6 p-4 rounded-2xl bg-zinc-100/80 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+              <div className="flex flex-col">
+                <span className="font-mono text-xs font-bold uppercase tracking-wider text-black dark:text-white">
+                  APPEARANCE
+                </span>
+                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">
+                  LIGHT / DARK ATELIER THEME
+                </span>
+              </div>
+              <ThemeToggle variant="switch" />
+            </div>
+
             {/* Footer details in mobile menu */}
-            <div className="pt-6 border-t border-zinc-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-zinc-500">
+            <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono text-zinc-500">
               <div>
-                <p className="text-zinc-900 font-bold">GM WORLDWIDE ATELIER</p>
+                <p className="text-zinc-900 dark:text-zinc-100 font-bold">GM WORLDWIDE ATELIER</p>
                 <p>GLOBAL EXPRESS SHIPPING // TAX INCLUDED</p>
               </div>
-              <div className="flex items-center gap-4 text-zinc-600">
+              <div className="flex items-center gap-4 text-zinc-600 dark:text-zinc-400">
                 <span>CURRENCY: USD ($)</span>
                 <span>•</span>
                 <span>EDITION: 2026</span>

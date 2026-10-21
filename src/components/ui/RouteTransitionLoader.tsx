@@ -179,10 +179,10 @@ export const RouteTransitionLoader: React.FC = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.28, ease: 'easeInOut' }}
-          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white/95 backdrop-blur-md"
+          className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-white/95 dark:bg-[#09090b]/95 backdrop-blur-md"
         >
           {/* Subtle Top Luxury Brand Trim */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-black to-transparent opacity-30" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-black dark:via-white to-transparent opacity-30" />
 
           {/* Liquid Logo Centerpiece */}
           <LiquidLogoLoader

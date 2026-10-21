@@ -188,7 +188,7 @@ const availableSizes: string[] = product.sizes ?? [];
   };
 
   return (
-    <div className="min-h-screen pt-10 sm:pt-28 pb-24 bg-white text-black">
+    <div className="min-h-screen pt-10 sm:pt-28 pb-24 bg-white dark:bg-[#09090b] text-black dark:text-white transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Top Breadcrumb Bar */}
@@ -403,7 +403,7 @@ const availableSizes: string[] = product.sizes ?? [];
                           className={`w-5 h-5 rounded-full ${color.border ? 'border border-zinc-400' : ''}`}
                           style={{ backgroundColor: color.hex }}
                         />
-                        <span className="text-xs font-mono text-zinc-800 font-medium">
+                        <span className="dark-text-color text-xs font-mono text-zinc-800 font-medium">
                           {color.name}
                         </span>
                       </button>

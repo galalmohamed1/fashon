@@ -5,6 +5,7 @@ import { ArrowUpRight, Globe, Shield, Truck, RefreshCw } from 'lucide-react';
 import { useShop } from '../../lib/context/ShopContext';
 import { Category } from '../../types';
 import { GMLogo } from '../ui/GMLogo';
+import { ThemeToggle } from '../ui/ThemeToggle';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
@@ -266,12 +267,16 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-zinc-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500">
-        <p>© 2026 GM ATELIER. ALL RIGHTS RESERVED.</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 border-t border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-zinc-500">
+        <div className="flex items-center gap-4">
+          <p>© 2026 GM ATELIER. ALL RIGHTS RESERVED.</p>
+          <span className="hidden sm:inline text-zinc-400">·</span>
+          <ThemeToggle variant="pill" />
+        </div>
         <div className="flex items-center gap-6">
-          <span className="hover:text-black cursor-pointer">PRIVACY POLICY</span>
-          <span className="hover:text-black cursor-pointer">TERMS OF SERVICE</span>
-          <span className="hover:text-black cursor-pointer">COOKIE PREFERENCES</span>
+          <span className="hover:text-black dark:hover:text-white cursor-pointer transition-colors">PRIVACY POLICY</span>
+          <span className="hover:text-black dark:hover:text-white cursor-pointer transition-colors">TERMS OF SERVICE</span>
+          <span className="hover:text-black dark:hover:text-white cursor-pointer transition-colors">COOKIE PREFERENCES</span>
         </div>
       </div>
     </footer>

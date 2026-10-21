@@ -28,7 +28,7 @@ export const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative overflow-hidden bg-[#f2f0f0] pt-28 lg:pt-0">
+    <section className="relative overflow-hidden bg-[#f2f0f0] dark:bg-[#0c0c0e] pt-28 lg:pt-0 transition-colors duration-300">
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 p-10 px-4 sm:px-6 lg:min-h-screen lg:grid-cols-2 lg:px-8">
         {/* Left */}
         <div className="pb-10 lg:pb-0">
@@ -36,7 +36,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="font-display text-2xl font-black uppercase leading-[0.95] tracking-tighter text-black sm:text-6xl lg:text-7xl"
+            className="font-display text-2xl font-black uppercase leading-[0.95] tracking-tighter text-black dark:text-white sm:text-6xl lg:text-7xl"
           >
             Find clothes
             <br />
@@ -49,7 +49,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.15 }}
-            className="mt-6 max-w-md text-sm leading-relaxed text-zinc-600 sm:text-base"
+            className="mt-6 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-base"
           >
             Browse through our diverse range of meticulously crafted garments, designed to
             bring out your individuality and cater to your sense of style.
@@ -61,7 +61,7 @@ export const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-8 w-full cursor-pointer rounded-full bg-black px-14 py-4 text-sm font-medium text-white transition-colors hover:bg-zinc-800 sm:w-auto"
+            className="mt-8 w-full cursor-pointer rounded-full bg-black dark:bg-white px-14 py-4 text-sm font-medium text-white dark:text-black transition-colors hover:bg-zinc-800 dark:hover:bg-zinc-200 sm:w-auto shadow-md"
           >
             Shop Now
           </motion.button>
@@ -75,10 +75,10 @@ export const Hero: React.FC = () => {
             {STATS.map((s, i) => (
               <div
                 key={s.label}
-                className={`pr-6 sm:pr-8 ${i > 0 ? 'border-l border-zinc-300 pl-6 sm:pl-8' : ''}`}
+                className={`pr-6 sm:pr-8 ${i > 0 ? 'border-l border-zinc-300 dark:border-zinc-800 pl-6 sm:pl-8' : ''}`}
               >
-                <p className="text-3xl font-medium text-black sm:text-4xl">{s.value}</p>
-                <p className="mt-1 text-xs text-zinc-600 sm:text-sm">{s.label}</p>
+                <p className="text-3xl font-medium text-black dark:text-white sm:text-4xl">{s.value}</p>
+                <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400 sm:text-sm">{s.label}</p>
               </div>
             ))}
           </motion.div>
@@ -92,7 +92,7 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.6 }}
             className="absolute right-2 top-16 z-20 sm:right-8 lg:top-24"
           >
-            <Star className="h-14 w-14 text-black sm:h-24 sm:w-24" />
+            <Star className="h-14 w-14 text-black dark:text-white sm:h-24 sm:w-24" />
           </motion.div>
 
           <motion.div
@@ -101,7 +101,7 @@ export const Hero: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.8 }}
             className="absolute left-2 top-[42%] z-20 sm:left-0"
           >
-            <Star className="h-8 w-8 text-black sm:h-12 sm:w-12" />
+            <Star className="h-8 w-8 text-black dark:text-white sm:h-12 sm:w-12" />
           </motion.div>
 
           <motion.img

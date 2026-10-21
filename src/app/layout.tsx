@@ -35,8 +35,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`scroll-smooth ${outfit.variable} ${spaceGrotesk.variable} ${syne.variable} ${jetBrainsMono.variable}`}>
-      <body className="bg-white text-zinc-950 antialiased selection:bg-black selection:text-white min-h-screen flex flex-col overflow-x-hidden font-sans"cz-shortcut-listen="true">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={`scroll-smooth ${outfit.variable} ${spaceGrotesk.variable} ${syne.variable} ${jetBrainsMono.variable}`}
+    >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('gm-theme');var isDark=t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(isDark){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className="bg-white text-zinc-950 dark:bg-[#09090b] dark:text-[#f4f4f5] antialiased selection:bg-red-600 selection:text-white min-h-screen flex flex-col overflow-x-hidden font-sans transition-colors duration-200" cz-shortcut-listen="true">
         <Providers>
           <ToastContainer position="bottom-left" />
           <SearchModal />

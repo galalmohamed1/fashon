@@ -212,24 +212,24 @@ export const LiquidLogoLoader: React.FC<LiquidLogoLoaderProps> = ({
       {/* Luxury Brand Label & Progress Text */}
       {showText && (
         <div className="mt-6 flex flex-col items-center text-center space-y-2">
-          <p className="font-display font-black text-xs uppercase tracking-[0.35em] text-black">
+          <p className="font-display font-black text-xs uppercase tracking-[0.35em] text-black dark:text-white">
             GM ATELIER
           </p>
 
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-black animate-ping" />
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-black dark:bg-white animate-ping" />
+            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
               {statusText}
             </span>
-            <span className="font-mono text-[10px] text-zinc-700 font-bold ml-1 min-w-[28px] text-right">
+            <span className="font-mono text-[10px] text-zinc-700 dark:text-zinc-300 font-bold ml-1 min-w-[28px] text-right">
               {Math.round(clampedProgress)}%
             </span>
           </div>
 
           {/* Micro Progress Bar */}
-          <div className="w-36 h-[2px] bg-zinc-200 rounded-full overflow-hidden mt-1">
+          <div className="w-36 h-[2px] bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden mt-1">
             <div
-              className="h-full bg-black transition-all duration-200 ease-out"
+              className="h-full bg-black dark:bg-white transition-all duration-200 ease-out"
               style={{ width: `${clampedProgress}%` }}
             />
           </div>

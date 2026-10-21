@@ -15,14 +15,14 @@ export const WishlistPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pt-10 pb-24 bg-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-black border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen pt-10 pb-24 bg-white dark:bg-[#09090b] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-black dark:border-white border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen pt-10 pb-24 bg-white">
+    <div className="min-h-screen pt-10 pb-24 bg-white dark:bg-[#09090b] text-black dark:text-white transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
